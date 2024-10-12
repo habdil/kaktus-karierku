@@ -9,10 +9,27 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.2.4",
+    "@hookform/resolvers": "^3.9.0",
+    "@nextui-org/button": "^2.0.38",
+    "@nextui-org/input": "^2.2.5",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.2",
+    "@radix-ui/themes": "^3.1.4",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "kaktus-karierku": "file:",
+    "lucide-react": "^0.451.0",
     "next": "14.2.15",
-    "react": "^18",
-    "react-dom": "^18"
+    "next-themes": "^0.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
+    "react-hot-toast": "^2.4.1",
+    "tailwind-merge": "^2.5.3",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
