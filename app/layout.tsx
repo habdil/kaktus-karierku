@@ -12,11 +12,11 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "CarePulse",
+  title: "KarierKu",
   description:
-    "A healthcare patient management System designed to streamline patient registration, appointment scheduling, and medical records management for healthcare providers.",
+    "A platform consulting carrer for Islamic Universiy of Indonesia",
   icons: {
-    icon: "/assets/icons/logo-icon.svg",
+    icon: "/logo-icon.png",
   },
 };
 
