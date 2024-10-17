@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { FiGrid, FiPieChart, FiCalendar, FiUserPlus } from 'react-icons/fi';
 
 const SidebarItem = ({ icon: Icon, label, href, isActive }: { icon: React.ElementType, label: string, href: string, isActive: boolean }) => (
-  <Link href={href} className={`flex items-center p-2 rounded-lg ${isActive ? 'bg-blue-700 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+  <Link href={href} className={`flex items-center p-2 rounded-lg ${isActive ? 'bg-blue-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
     <Icon className="w-5 h-5 mr-3" />
     <span>{label}</span>
   </Link>
@@ -16,7 +16,7 @@ export const Sidebar = () => {
   const menuItems = [
     { icon: FiGrid, label: 'Dashboard', href: '/admin/dashboard' },
     { icon: FiPieChart, label: 'Analytics', href: '/admin/analytics' },
-    { icon: FiCalendar, label: 'Add Event', href: '/admin/add-event' },
+    { icon: FiCalendar, label: 'Add Event', href: '/admin/addEvents' },
     { icon: FiUserPlus, label: 'Add Mentor', href: '/admin/add-mentor' },
   ];
 

@@ -1,0 +1,133 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                    Int                    @id @default(autoincrement())
+  email                 String                 @unique
+  password              String
+  name                  String
+  role                  UserRole               @default(CLIENT)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  profile               Profile?
+  consultationsAsClient Consultation[]         @relation("ClientConsultations")
+  careerPersonalization CareerPersonalization?
+  mentor                Mentor?
+}
+
+model Profile {
+  id            Int           @id @default(autoincrement())
+  userId        Int           @unique
+  user          User          @relation(fields: [userId], references: [id])
+  phone         String?
+  education     String?
+  interests     String[]
+  hobbies       String[]
+  careerGoals   String?
+  currentStatus CareerStatus?
+}
+
+model Admin {
+  id        Int            @id @default(autoincrement())
+  email     String         @unique
+  password  String
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  sessions  AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id @default(uuid())
+  adminId   Int
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Mentor {
+  id                Int                 @id @default(autoincrement())
+  userId            Int                 @unique
+  user              User                @relation(fields: [userId], references: [id])
+  specialization    String
+  company           String
+  jobTitle          String
+  experience        Int
+  education         String
+  bio               String
+  motivation        String
+  availableSlots    MentorAvailability[]
+  consultationsAsMentor Consultation[]      @relation("MentorConsultations")
+}
+
+model MentorAvailability {
+  id        Int      @id @default(autoincrement())
+  mentorId  Int
+  mentor    Mentor   @relation(fields: [mentorId], references: [id])
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  isBooked  Boolean  @default(false)
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  bannerUrl   String
+  location    String
+  date        DateTime
+  url         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Consultation {
+  id            Int                @id @default(autoincrement())
+  clientId      Int
+  client        User               @relation("ClientConsultations", fields: [clientId], references: [id])
+  mentorId      Int
+  mentor        Mentor             @relation("MentorConsultations", fields: [mentorId], references: [id])
+  status        ConsultationStatus
+  scheduledAt   DateTime
+  zoomLink      String?
+  notes         String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+model CareerPersonalization {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  user           User    @relation(fields: [userId], references: [id])
+  answers        Json    // Store personalization answers as JSON
+  recommendation String?
+}
+
+enum UserRole {
+  ADMIN
+  MENTOR
+  CLIENT
+}
+
+enum CareerStatus {
+  EMPLOYED
+  JOB_SEEKING
+  STUDYING
+}
+
+enum ConsultationStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+}

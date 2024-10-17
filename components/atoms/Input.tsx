@@ -11,6 +11,7 @@ interface InputProps {
   isPassword?: boolean
   showPassword?: boolean
   toggleShowPassword?: () => void
+  disabled?: boolean
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -23,6 +24,7 @@ export const Input: React.FC<InputProps> = ({
   isPassword = false,
   showPassword,
   toggleShowPassword,
+  disabled = false, 
 }) => (
   <div className="mb-6">
     <label htmlFor={id} className="text-black mb-2 block text-sm font-medium">
@@ -36,12 +38,14 @@ export const Input: React.FC<InputProps> = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        disabled={disabled} 
       />
       {isPassword && (
         <button
           type="button"
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
           onClick={toggleShowPassword}
+          disabled={disabled}
         >
           {showPassword ? (
             <EyeOffIcon className="h-5 w-5" />
