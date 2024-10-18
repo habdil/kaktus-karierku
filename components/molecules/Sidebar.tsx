@@ -17,7 +17,7 @@ export const Sidebar = () => {
     { icon: FiGrid, label: 'Dashboard', href: '/admin/dashboard' },
     { icon: FiPieChart, label: 'Analytics', href: '/admin/analytics' },
     { icon: FiCalendar, label: 'Add Event', href: '/admin/addEvents' },
-    { icon: FiUserPlus, label: 'Add Mentor', href: '/admin/add-mentor' },
+    { icon: FiUserPlus, label: 'Add Mentor', href: '/admin/addMentor' },
   ];
 
   return (

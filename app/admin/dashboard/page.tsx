@@ -19,7 +19,7 @@ const StatCard = ({ icon: Icon, title, value }: { icon: React.ElementType, title
 const DashboardAdminPage = () => {
   return (
     <DashboardLayout title="Dashboard">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="text-black grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <StatCard icon={FiUsers} title="Total Users" value="1,234" />
         <StatCard icon={FiCalendar} title="Upcoming Events" value="5" />
         <StatCard icon={FiBookOpen} title="Active Mentors" value="23" />

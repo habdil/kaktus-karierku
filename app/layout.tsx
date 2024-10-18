@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     "A platform consulting carrer for Islamic Universiy of Indonesia",
   icons: {
-    icon: "/logo-icon.png",
+    icon: "logo.png",
   },
 };
 
