@@ -1,5 +1,4 @@
-// prisma/schema.prisma
-
+// This is your Prisma schema file
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,124 +9,180 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id                    Int                    @id @default(autoincrement())
-  email                 String                 @unique
-  password              String
-  name                  String
-  role                  UserRole               @default(CLIENT)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  profile               Profile?
-  consultationsAsClient Consultation[]         @relation("ClientConsultations")
-  careerPersonalization CareerPersonalization?
-  mentor                Mentor?
-}
-
-model Profile {
-  id            Int           @id @default(autoincrement())
-  userId        Int           @unique
-  user          User          @relation(fields: [userId], references: [id])
-  phone         String?
-  education     String?
-  interests     String[]
-  hobbies       String[]
-  careerGoals   String?
-  currentStatus CareerStatus?
-}
-
-model Admin {
-  id        Int            @id @default(autoincrement())
-  email     String         @unique
-  password  String
-  name      String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  sessions  AdminSession[]
-}
-
-model AdminSession {
-  id        String   @id @default(uuid())
-  adminId   Int
-  admin     Admin    @relation(fields: [adminId], references: [id])
-  token     String   @unique
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-}
-
-model Mentor {
-  id                Int                 @id @default(autoincrement())
-  userId            Int                 @unique
-  user              User                @relation(fields: [userId], references: [id])
-  specialization    String
-  company           String
-  jobTitle          String
-  experience        Int
-  education         String
-  bio               String
-  motivation        String
-  availableSlots    MentorAvailability[]
-  consultationsAsMentor Consultation[]      @relation("MentorConsultations")
-}
-
-model MentorAvailability {
-  id        Int      @id @default(autoincrement())
-  mentorId  Int
-  mentor    Mentor   @relation(fields: [mentorId], references: [id])
-  date      DateTime
-  startTime DateTime
-  endTime   DateTime
-  isBooked  Boolean  @default(false)
-}
-
-model Event {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  bannerUrl   String
-  location    String
-  date        DateTime
-  url         String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Consultation {
-  id            Int                @id @default(autoincrement())
-  clientId      Int
-  client        User               @relation("ClientConsultations", fields: [clientId], references: [id])
-  mentorId      Int
-  mentor        Mentor             @relation("MentorConsultations", fields: [mentorId], references: [id])
-  status        ConsultationStatus
-  scheduledAt   DateTime
-  zoomLink      String?
-  notes         String?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-}
-
-model CareerPersonalization {
-  id             Int     @id @default(autoincrement())
-  userId         Int     @unique
-  user           User    @relation(fields: [userId], references: [id])
-  answers        Json    // Store personalization answers as JSON
-  recommendation String?
-}
-
-enum UserRole {
+enum Role {
   ADMIN
   MENTOR
   CLIENT
 }
 
-enum CareerStatus {
-  EMPLOYED
-  JOB_SEEKING
-  STUDYING
+enum ConsultationStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
 }
 
-enum ConsultationStatus {
+enum ClientStatus {
   NEW
   IN_PROGRESS
   COMPLETED
+}
+
+enum MentorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String
+  role          Role
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations based on role
+  client        Client?
+  mentor        Mentor?
+  admin         Admin?
+}
+
+model Client {
+  id                String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String
+  major            String?
+  interests        String[]
+  hobbies          String[]
+  dreamJob         String?
+  currentStatus    String?   // e.g., "Masih Kuliah", "Mencari Kerja", "Sudah Kerja"
+  
+  // Relations
+  consultations    Consultation[]
+  eventRegistrations EventRegistration[]
+  careerAssessments CareerAssessment[]
+  mentorRelations  ClientMentor[]    // Added this line
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Mentor {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName          String
+  phoneNumber       String
+  education         String
+  maritalStatus     String?
+  company           String
+  jobRole           String
+  motivation        String?
+  status            MentorStatus @default(ACTIVE)
+  
+  // Relations
+  consultations     Consultation[]
+  availableSlots    ConsultationSlot[]
+  clientRelations   ClientMentor[]    // Added this line
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Admin {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName    String
+  
+  // Relations
+  events      Event[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @db.Text
+  bannerUrl   String
+  location    String
+  date        DateTime
+  url         String?
+  adminId     String
+  admin       Admin     @relation(fields: [adminId], references: [id])
+  
+  // Relations
+  registrations EventRegistration[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model EventRegistration {
+  id          String    @id @default(cuid())
+  eventId     String
+  clientId    String
+  event       Event     @relation(fields: [eventId], references: [id])
+  client      Client    @relation(fields: [clientId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@unique([eventId, clientId])
+}
+
+model Consultation {
+  id          String    @id @default(cuid())
+  clientId    String
+  mentorId    String
+  status      ConsultationStatus
+  zoomLink    String?
+  messages    Message[]
+  client      Client    @relation(fields: [clientId], references: [id])
+  mentor      Mentor    @relation(fields: [mentorId], references: [id])
+  slotId      String?
+  slot        ConsultationSlot? @relation(fields: [slotId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ConsultationSlot {
+  id            String    @id @default(cuid())
+  mentorId      String
+  mentor        Mentor    @relation(fields: [mentorId], references: [id])
+  startTime     DateTime
+  endTime       DateTime
+  isBooked      Boolean   @default(false)
+  consultations Consultation[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Message {
+  id              String    @id @default(cuid())
+  consultationId  String
+  consultation    Consultation @relation(fields: [consultationId], references: [id])
+  senderId        String    // userId of sender
+  content         String    @db.Text
+  createdAt       DateTime  @default(now())
+}
+
+model CareerAssessment {
+  id          String    @id @default(cuid())
+  clientId    String
+  client      Client    @relation(fields: [clientId], references: [id])
+  answers     Json      // Stored as JSON to maintain flexibility
+  geminiResponse String @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ClientMentor {
+  id          String    @id @default(cuid())
+  clientId    String
+  mentorId    String
+  status      ClientStatus
+  client      Client    @relation(fields: [clientId], references: [id])
+  mentor      Mentor    @relation(fields: [mentorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([clientId, mentorId])
 }

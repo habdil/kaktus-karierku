@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Plus_Jakarta_Sans as FontSans } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 
-import { cn } from "@/lib/utils";
-
-const fontSans = FontSans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-sans",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "KarierKu",
-  description:
-    "A platform consulting carrer for Islamic Universiy of Indonesia",
-  icons: {
-    icon: "logo.png",
-  },
+  title: "Career Guidance Platform",
+  description: "Platform untuk pengembangan karir dan konsultasi dengan mentor profesional",
 };
 
 export default function RootLayout({
@@ -26,16 +17,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={cn(
-          "min-h-screen bg-white font-sans antialiased",
-          fontSans.variable
-        )}
-      >
-        <ThemeProvider attribute="class" defaultTheme="dark">
-          {children}
-        </ThemeProvider>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
       </body>
     </html>
   );
