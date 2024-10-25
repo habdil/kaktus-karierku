@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getMentorSession } from "./lib/auth";
 
 // Definisi protected routes sesuai struktur folder
 const ADMIN_ROUTES = [
@@ -9,24 +10,43 @@ const ADMIN_ROUTES = [
   '/dashboard-admin/mentors'
 ];
 
+const MENTOR_ROUTES = [
+  '/dashboard-mentor',
+  '/dashboard-mentor/clients',
+  '/dashboard-mentor/consultation',
+  '/dashboard-mentor/events'
+];
+
 const AUTH_ROUTE = '/';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isAdminRoute = ADMIN_ROUTES.some(route => pathname.includes(route));
-  const token = request.cookies.get("admin-token")?.value;
+  const isAdminRoute = ADMIN_ROUTES.some(route => pathname.startsWith(route));
+  const isMentorRoute = MENTOR_ROUTES.some(route => pathname.startsWith(route));
+  const adminToken = request.cookies.get("admin-token")?.value;
 
   // Jika mengakses admin routes tanpa token
-  if (isAdminRoute && !token) {
+  if (isAdminRoute && !adminToken) {
     // Redirect ke login dengan return URL
     const searchParams = new URLSearchParams({
-      'returnUrl': pathname
+      returnUrl: pathname
     });
     return NextResponse.redirect(
       new URL(`${AUTH_ROUTE}?${searchParams}`, request.url)
     );
   }
 
+  // Handle mentor routes
+  if (isMentorRoute) {
+    const session = await getMentorSession(request);
+
+    // Jika tidak ada sesi atau role bukan mentor, redirect ke login mentor
+    if (!session || session.role !== "MENTOR") {
+      return NextResponse.redirect(new URL("/mentor/login", request.url));
+    }
+  }
+
+  // Lanjut ke route berikutnya jika tidak ada kondisi redirect
   return NextResponse.next();
 }
 
@@ -34,8 +54,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard-admin/:path*',
-    '/dashboard-admin/analytics/:path*',
-    '/dashboard-admin/events/:path*',
-    '/dashboard-admin/mentors/:path*'
+    '/dashboard-mentor/:path*'
   ]
 };
