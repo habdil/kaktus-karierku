@@ -7,7 +7,7 @@ import Footer from "@/components/shared/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Career Guidance Platform",
+  title: "KarierKu",
   description: "Platform untuk pengembangan karir dan konsultasi dengan mentor profesional",
 };
 

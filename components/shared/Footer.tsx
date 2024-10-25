@@ -99,7 +99,7 @@ const Footer = () => {
         
         <div className="border-t py-6">
           <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CareerGuide. All rights reserved.
+            © {new Date().getFullYear()} Karierku. All rights reserved.
           </p>
         </div>
       </div>

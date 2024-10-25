@@ -21,7 +21,7 @@ export default function Home() {
                 dan program pengembangan yang dirancang khusus untukmu.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Button size="lg" className="bg-primary-600 hover:bg-primary-700" asChild>
+                <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white" asChild>
                   <Link href="/register">Mulai Sekarang</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
