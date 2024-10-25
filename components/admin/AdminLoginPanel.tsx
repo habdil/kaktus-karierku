@@ -8,6 +8,7 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -17,20 +18,75 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+interface LoginResponse {
+  success: boolean;
+  user?: {
+    email: string;
+    fullName: string;
+  };
+  error?: string;
+}
+
 export function AdminLoginPanel() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // Add your login logic here
-    // await loginAdmin(email, password);
-    setTimeout(() => {
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      const response = await fetch("/api/admin/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data: LoginResponse = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to login");
+      }
+
+      if (data.success && data.user) {
+        // Store user info if needed
+        localStorage.setItem("adminUser", JSON.stringify(data.user));
+        
+        toast({
+          title: "Login berhasil!",
+          description: `Selamat datang kembali, ${data.user.fullName}`,
+        });
+
+        setTimeout(() => {
+          router.push('/dashboard-admin');
+          router.refresh();
+        }, 1000);
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan saat login";
+      
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Login gagal",
+        description: errorMessage,
+      });
+    } finally {
       setIsLoading(false);
-      router.push('/admin/dashboard');
-    }, 1000);
+    }
   };
 
   return (
@@ -56,12 +112,19 @@ export function AdminLoginPanel() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="nama@perusahaan.com"
+                disabled={isLoading}
                 required
               />
             </div>
@@ -70,8 +133,10 @@ export function AdminLoginPanel() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Masukkan password"
+                  disabled={isLoading}
                   required
                   className="pr-10"
                 />

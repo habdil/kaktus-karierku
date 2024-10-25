@@ -12,12 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AdminSession } from "@/lib/auth";
 
 interface AdminHeaderProps {
-  className?: string;
+  user: AdminSession;
 }
 
-export function AdminHeader({ className }: AdminHeaderProps) {
+export function AdminHeader({ user }: AdminHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">

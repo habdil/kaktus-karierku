@@ -15,6 +15,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+
 
 interface SidebarItem {
   title: string;
@@ -52,7 +55,49 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ items = defaultItems, className }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      const response = await fetch("/api/admin/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      // Clear local storage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("adminUser");
+      }
+      
+      toast({
+        title: "Logout berhasil",
+        description: "Anda telah keluar dari sistem",
+      });
+
+      // Use window.location for full page refresh
+      window.location.href = "/admin";
+      
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        variant: "destructive",
+        title: "Logout gagal",
+        description: "Terjadi kesalahan saat logout",
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div
@@ -112,12 +157,15 @@ export function AdminSidebar({ items = defaultItems, className }: AdminSidebarPr
             "w-full justify-start text-muted-foreground hover:text-primary hover:bg-background/80",
             collapsed && "justify-center"
           )}
-          onClick={() => {
-            // Add logout logic here
-          }}
+          onClick={handleLogout}
+          disabled={isLoggingOut}
         >
           <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="ml-3">Logout</span>}
+          {!collapsed && (
+            <span className="ml-3">
+              {isLoggingOut ? "Logging out..." : "Logout"}
+            </span>
+          )}
         </Button>
       </div>
 
