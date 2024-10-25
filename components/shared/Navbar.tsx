@@ -89,10 +89,10 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="grid gap-2 px-3 py-2">
-              <Button variant="ghost" className="w-full justify-start" asChild>
+              <Button variant="ghost" className="w-full justify-center bg-gray-100" asChild>
                 <Link href="/login">Log in</Link>
               </Button>
-              <Button className="w-full bg-primary-600 hover:bg-primary-700" asChild>
+              <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" asChild>
                 <Link href="/register">Sign up</Link>
               </Button>
             </div>

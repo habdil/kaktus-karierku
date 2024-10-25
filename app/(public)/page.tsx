@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <>
+    <div className="w-full overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background pt-16 pb-32">
         <div className="absolute inset-0 bg-grid-slate-50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-900/50"></div>
@@ -305,6 +305,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

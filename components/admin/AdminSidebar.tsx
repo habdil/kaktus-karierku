@@ -25,22 +25,22 @@ interface SidebarItem {
 const defaultItems: SidebarItem[] = [
   {
     title: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/dashboard-admin",
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
     title: "Analytics",
-    href: "/admin/analytics",
+    href: "/dashboard-admin/analytics",
     icon: <BarChart3 className="h-5 w-5" />,
   },
   {
     title: "Add Event",
-    href: "/admin/events/add",
+    href: "/dashboard-admin/events",
     icon: <CalendarPlus className="h-5 w-5" />,
   },
   {
     title: "Add Mentor",
-    href: "/admin/mentors/add",
+    href: "/dashboard-admin/mentors",
     icon: <Users className="h-5 w-5" />,
   },
 ];
