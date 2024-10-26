@@ -1,11 +1,14 @@
-export interface LoginCredentials {
-    email: string;
-    password: string;
-  }
-  
-  export interface AdminSessionData {
+export interface AuthenticatedResponse {
+  success: boolean;
+  error?: string;
+  user?: {
     id: string;
     email: string;
-    fullName: string;
-    role: 'ADMIN';
-  }
+    role: "ADMIN" | "MENTOR" | "CLIENT";
+    fullName?: string;
+  };
+}
+
+export interface AuthRedirect {
+  callbackUrl?: string;
+}

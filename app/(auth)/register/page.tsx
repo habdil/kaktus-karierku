@@ -3,12 +3,99 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+
+// Form Schema
+const registerSchema = z.object({
+  firstName: z.string().min(2, {
+    message: "First name must be at least 2 characters.",
+  }),
+  lastName: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
+  terms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the terms and conditions.",
+  }),
+});
+
+type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const form = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      terms: false,
+    },
+  });
+
+  const onSubmit = async (values: RegisterForm) => {
+    try {
+      setIsLoading(true);
+
+      const response = await fetch("/api/client/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+          username: `${values.firstName.toLowerCase()}${Math.floor(Math.random() * 1000)}`, // Generate simple username
+          fullName: `${values.firstName} ${values.lastName}`,
+          // Optional fields can be added here
+          interests: [],
+          hobbies: [],
+          currentStatus: "Mencari Kerja",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+      toast({
+        title: "Registration successful",
+        description: "Your account has been created successfully.",
+      });
+
+      // Redirect to login page
+      router.push("/login");
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "Something went wrong",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 space-y-8">
@@ -28,22 +115,50 @@ export default function RegisterPage() {
       </div>
 
       {/* Register Form */}
-      <form className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-primary-900">First Name</label>
-              <Input placeholder="John" />
+              <Input 
+                placeholder="John"
+                {...form.register("firstName")}
+                disabled={isLoading}
+              />
+              {form.formState.errors.firstName && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.firstName.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-primary-900">Last Name</label>
-              <Input placeholder="Doe" />
+              <Input 
+                placeholder="Doe"
+                {...form.register("lastName")}
+                disabled={isLoading}
+              />
+              {form.formState.errors.lastName && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.lastName.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-primary-900">Email</label>
-            <Input type="email" placeholder="john@gmail.com" />
+            <Input 
+              type="email" 
+              placeholder="john@example.com"
+              {...form.register("email")}
+              disabled={isLoading}
+            />
+            {form.formState.errors.email && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -53,6 +168,8 @@ export default function RegisterPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 className="pr-10"
+                {...form.register("password")}
+                disabled={isLoading}
               />
               <button
                 type="button"
@@ -66,6 +183,11 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
+            {form.formState.errors.password && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.password.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -73,7 +195,9 @@ export default function RegisterPage() {
           <input
             type="checkbox"
             id="terms"
+            {...form.register("terms")}
             className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            disabled={isLoading}
           />
           <label htmlFor="terms" className="text-sm text-muted-foreground">
             I agree to the{" "}
@@ -86,9 +210,25 @@ export default function RegisterPage() {
             </Link>
           </label>
         </div>
+        {form.formState.errors.terms && (
+          <p className="text-sm text-red-500 mt-1">
+            {form.formState.errors.terms.message}
+          </p>
+        )}
 
-        <Button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white">
-          Create Account
+        <Button 
+          type="submit" 
+          className="w-full bg-primary-600 hover:bg-primary-700 text-white"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Account...
+            </>
+          ) : (
+            "Create Account"
+          )}
         </Button>
       </form>
 
@@ -105,7 +245,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="grid gap-4">
-        <Button variant="outline">
+        <Button variant="outline" disabled={isLoading}>
           <Image
             src="/images/google.png"
             alt="Google"

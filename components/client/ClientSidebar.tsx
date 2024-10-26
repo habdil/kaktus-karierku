@@ -7,9 +7,9 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  MessageSquare,
-  Users,
+  Compass,
   Calendar,
+  MessageSquare,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -27,32 +27,32 @@ interface SidebarItem {
 const defaultItems: SidebarItem[] = [
   {
     title: "Dashboard",
-    href: "/dashboard-mentor",
+    href: "/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
-    title: "Konsultasi",
-    href: "/dashboard-mentor/konsultasi",
-    icon: <MessageSquare className="h-5 w-5" />,
-  },
-  {
-    title: "List Client",
-    href: "/dashboard-mentor/clients",
-    icon: <Users className="h-5 w-5" />,
+    title: "Personalisasi Karir",
+    href: "/dashboard/career",
+    icon: <Compass className="h-5 w-5" />,
   },
   {
     title: "Event",
-    href: "/dashboard-mentor/events",
+    href: "/dashboard/events",
     icon: <Calendar className="h-5 w-5" />,
+  },
+  {
+    title: "Konsultasi",
+    href: "/dashboard/consultation",
+    icon: <MessageSquare className="h-5 w-5" />,
   },
 ];
 
-interface MentorSidebarProps {
+interface ClientSidebarProps {
   items?: SidebarItem[];
   className?: string;
 }
 
-export function MentorSidebar({ items = defaultItems, className }: MentorSidebarProps) {
+export function ClientSidebar({ items = defaultItems, className }: ClientSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -60,26 +60,19 @@ export function MentorSidebar({ items = defaultItems, className }: MentorSidebar
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("/api/mentor/auth/logout", {
+      const response = await fetch("/api/client/auth/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
-      if (!response.ok) {
-        throw new Error("Logout failed");
-      }
+      if (!response.ok) throw new Error("Logout failed");
 
       toast({
         title: "Logged out successfully",
-        description: "You have been logged out of your account",
+        description: "See you again!",
       });
 
-      router.push("/mentor");
-      router.refresh();
+      router.push("/login");
     } catch (error) {
-      console.error("Logout error:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -89,13 +82,11 @@ export function MentorSidebar({ items = defaultItems, className }: MentorSidebar
   };
 
   return (
-    <div
-      className={cn(
-        "relative flex flex-col border-r bg-card transition-all duration-300",
-        collapsed ? "w-16" : "w-64",
-        className
-      )}
-    >
+    <div className={cn(
+      "relative flex flex-col border-r bg-card transition-all duration-300",
+      collapsed ? "w-16" : "w-64",
+      className
+    )}>
       {/* Logo */}
       <div className={cn(
         "flex h-16 items-center border-b px-4",
@@ -109,7 +100,7 @@ export function MentorSidebar({ items = defaultItems, className }: MentorSidebar
           className="rounded-lg"
         />
         {!collapsed && (
-          <span className="ml-2 font-semibold text-lg text-black">
+          <span className="ml-2 font-semibold text-lg text-primary">
             KarierKu
           </span>
         )}
@@ -157,7 +148,7 @@ export function MentorSidebar({ items = defaultItems, className }: MentorSidebar
       <Button
         variant="ghost"
         size="icon"
-        className="absolute -right-4 top-20 h-8 w-8 rounded-full border bg-background"
+        className="absolute -right-4 top-20 h-8 w-8 rounded-full border bg-background shadow-md"
         onClick={() => setCollapsed(!collapsed)}
       >
         {collapsed ? (

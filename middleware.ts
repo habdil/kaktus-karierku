@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getMentorSession } from "./lib/auth";
+import { getMentorSession, getAdminSession, getClientSession } from "./lib/auth";
 
-// Definisi protected routes sesuai struktur folder
+// Protected routes definition
 const ADMIN_ROUTES = [
   '/dashboard-admin',
   '/dashboard-admin/analytics',
@@ -17,43 +17,91 @@ const MENTOR_ROUTES = [
   '/dashboard-mentor/events'
 ];
 
-const AUTH_ROUTE = '/';
+const CLIENT_ROUTES = [
+  '/dashboard',
+  '/dashboard/career',
+  '/dashboard/events',
+  '/dashboard/consultation'
+];
+
+const PUBLIC_ROUTES = ['/', '/login', '/register'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Check route types
   const isAdminRoute = ADMIN_ROUTES.some(route => pathname.startsWith(route));
   const isMentorRoute = MENTOR_ROUTES.some(route => pathname.startsWith(route));
-  const adminToken = request.cookies.get("admin-token")?.value;
+  const isClientRoute = CLIENT_ROUTES.some(route => pathname.startsWith(route));
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname === route);
 
-  // Jika mengakses admin routes tanpa token
-  if (isAdminRoute && !adminToken) {
-    // Redirect ke login dengan return URL
-    const searchParams = new URLSearchParams({
-      returnUrl: pathname
-    });
-    return NextResponse.redirect(
-      new URL(`${AUTH_ROUTE}?${searchParams}`, request.url)
-    );
+  // Handle admin routes
+  if (isAdminRoute) {
+    const session = await getAdminSession(request);
+    
+    if (!session || session.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
   }
 
   // Handle mentor routes
   if (isMentorRoute) {
     const session = await getMentorSession(request);
-
-    // Jika tidak ada sesi atau role bukan mentor, redirect ke login mentor
+    
     if (!session || session.role !== "MENTOR") {
-      return NextResponse.redirect(new URL("/mentor/login", request.url));
+      return NextResponse.redirect(new URL("/mentor", request.url));
     }
   }
 
-  // Lanjut ke route berikutnya jika tidak ada kondisi redirect
+  // Handle client routes
+  if (isClientRoute) {
+    const session = await getClientSession(request);
+    
+    if (!session || session.role !== "CLIENT") {
+      // Store the intended destination
+      const searchParams = new URLSearchParams({
+        callbackUrl: pathname
+      });
+      
+      return NextResponse.redirect(
+        new URL(`/login?${searchParams}`, request.url)
+      );
+    }
+  }
+
+  // Handle public routes when user is already authenticated
+  if (isPublicRoute) {
+    const adminSession = await getAdminSession(request);
+    const mentorSession = await getMentorSession(request);
+    const clientSession = await getClientSession(request);
+
+    if (adminSession) {
+      return NextResponse.redirect(new URL("/dashboard-admin", request.url));
+    }
+
+    if (mentorSession) {
+      return NextResponse.redirect(new URL("/dashboard-mentor", request.url));
+    }
+
+    if (clientSession) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  // Continue to next middleware or route handler
   return NextResponse.next();
 }
 
-// Matcher untuk routes yang perlu di-protect
+// Matcher configuration
 export const config = {
   matcher: [
+    // Protected routes
     '/dashboard-admin/:path*',
-    '/dashboard-mentor/:path*'
+    '/dashboard-mentor/:path*',
+    '/dashboard/:path*',
+    // Public routes
+    '/',
+    '/login',
+    '/register'
   ]
 };

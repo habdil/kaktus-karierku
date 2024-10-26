@@ -25,8 +25,14 @@ export interface MentorSession extends BaseSession {
   mentorId: string;
 }
 
+export interface ClientSession extends BaseSession {
+  role: "CLIENT";
+  fullName: string;
+  clientId: string;
+}
+
 // Type untuk role-specific session
-type UserSession = AdminSession | MentorSession;
+type UserSession = AdminSession | MentorSession | ClientSession;
 
 // Generic function untuk membuat session
 async function createSession<T extends UserSession>(
@@ -57,6 +63,10 @@ export async function createAdminSession(session: AdminSession) {
 
 export async function createMentorSession(session: MentorSession) {
   return createSession(session, "mentor-token");
+}
+
+export async function createClientSession(session: ClientSession) {
+  return createSession(session, "client-token");
 }
 
 // Token verification
@@ -104,6 +114,23 @@ export async function getMentorSession(req?: NextRequest) {
   }
 }
 
+export async function getClientSession(req?: NextRequest) {
+  try {
+    const token = req
+      ? req.cookies.get("client-token")?.value
+      : cookies().get("client-token")?.value;
+
+    if (!token) return null;
+
+    const verified = await verifyToken<ClientSession>(token);
+    if (verified.role !== "CLIENT") return null;
+
+    return verified;
+  } catch {
+    return null;
+  }
+}
+
 // Permission checking
 export function checkPermission(
   permission: string,
@@ -115,7 +142,10 @@ export function checkPermission(
 
 // Logout function
 export async function logout() {
-  const cookieOptions = { expires: new Date(0) };
+  const cookieOptions = { 
+    expires: new Date(0),
+    path: "/" 
+  };
   
   cookies().set("admin-token", "", cookieOptions);
   cookies().set("mentor-token", "", cookieOptions);
@@ -129,6 +159,9 @@ export async function getCurrentSession(req?: NextRequest) {
 
   const mentorSession = await getMentorSession(req);
   if (mentorSession) return mentorSession;
+
+  const clientSession = await getClientSession(req);
+  if (clientSession) return clientSession;
 
   return null;
 }

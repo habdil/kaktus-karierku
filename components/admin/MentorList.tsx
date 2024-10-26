@@ -161,8 +161,8 @@ export function MentorList({ initialMentors }: MentorListProps) {
           </div>
           <Button asChild>
             <Link href="/dashboard-admin/mentors/add">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Mentor
+              <UserPlus className="mr-2 h-4 w-4 text-white" />
+                <span className="text-white">Add Mentor</span>
             </Link>
           </Button>
         </div>
@@ -207,7 +207,7 @@ export function MentorList({ initialMentors }: MentorListProps) {
                   <TableCell>{mentor.jobRole}</TableCell>
                   <TableCell>
                     <Badge
-                      variant={mentor.status === "ACTIVE" ? "default" : "secondary"}
+                      variant={mentor.status === "ACTIVE" ? "success" : "default"}
                     >
                       {mentor.status.toLowerCase()}
                     </Badge>
