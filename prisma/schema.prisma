@@ -58,29 +58,33 @@ model Mentor {
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Admin {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  fullName  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  events    Event[]
+model Event {
+ id            String              @id @default(cuid())
+ title         String
+ description   String              @db.Text    // Tambahkan @db.Text untuk text panjang
+ bannerUrl     String
+ location      String
+ date          DateTime
+ url           String?
+ adminId       String
+ createdAt     DateTime            @default(now())
+ updatedAt     DateTime            @updatedAt
+ admin         Admin               @relation(fields: [adminId], references: [id], onDelete: Cascade)  // Tambahkan onDelete: Cascade
+ registrations EventRegistration[]
+
+ @@index([adminId])  // Tambahkan index untuk foreign key
 }
 
-model Event {
-  id            String              @id @default(cuid())
-  title         String
-  description   String
-  bannerUrl     String
-  location      String
-  date          DateTime
-  url           String?
-  adminId       String
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  admin         Admin               @relation(fields: [adminId], references: [id])
-  registrations EventRegistration[]
+model Admin {
+ id        String   @id @default(cuid())
+ userId    String   @unique
+ fullName  String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ events    Event[]
+
+ @@index([userId])  // Tambahkan index untuk foreign key
 }
 
 model EventRegistration {

@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import * as Dialog from '@radix-ui/react-dialog';
 
 interface Mentor {
   id: string;
@@ -61,6 +62,8 @@ export function MentorList({ initialMentors }: MentorListProps) {
     direction: "asc" | "desc";
   }>({ key: "createdAt", direction: "desc" });
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
 
   // Filter mentors based on search query
   const filteredMentors = mentors.filter((mentor) =>
@@ -122,11 +125,10 @@ export function MentorList({ initialMentors }: MentorListProps) {
   };
 
   // Handle delete
-  const handleDelete = async (mentorId: string) => {
-    if (!window.confirm("Are you sure you want to delete this mentor?")) return;
-
+  const confirmDelete = async () => {
+    if (!selectedMentorId) return;
     try {
-      const response = await fetch(`/api/admin/mentors/${mentorId}`, {
+      const response = await fetch(`/api/admin/mentors/${selectedMentorId}`, {
         method: "DELETE",
       });
 
@@ -134,7 +136,7 @@ export function MentorList({ initialMentors }: MentorListProps) {
         throw new Error("Failed to delete mentor");
       }
 
-      setMentors(mentors.filter((mentor) => mentor.id !== mentorId));
+      setMentors(mentors.filter((mentor) => mentor.id !== selectedMentorId));
 
       toast({
         title: "Mentor Deleted",
@@ -146,6 +148,9 @@ export function MentorList({ initialMentors }: MentorListProps) {
         title: "Error",
         description: "Failed to delete mentor.",
       });
+    } finally {
+      setDialogOpen(false);
+      setSelectedMentorId(null);
     }
   };
 
@@ -168,7 +173,6 @@ export function MentorList({ initialMentors }: MentorListProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Search and Filters */}
         <div className="mb-4">
           <Input
             placeholder="Search mentors..."
@@ -178,7 +182,6 @@ export function MentorList({ initialMentors }: MentorListProps) {
           />
         </div>
 
-        {/* Mentors Table */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -248,7 +251,10 @@ export function MentorList({ initialMentors }: MentorListProps) {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => handleDelete(mentor.id)}
+                          onClick={() => {
+                            setSelectedMentorId(mentor.id);
+                            setDialogOpen(true);
+                          }}
                           className="text-red-600"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -270,6 +276,23 @@ export function MentorList({ initialMentors }: MentorListProps) {
           </Table>
         </div>
       </CardContent>
+
+      {/* Radix UI Dialog */}
+      <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-md max-w-md w-full">
+            <Dialog.Title className="text-lg font-semibold">Confirm Delete</Dialog.Title>
+            <Dialog.Description className="text-gray-600 mt-2">
+              Are you sure you want to delete this mentor? This action cannot be undone.
+            </Dialog.Description>
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </Card>
   );
 }

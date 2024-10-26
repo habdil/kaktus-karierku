@@ -100,7 +100,7 @@ export function ClientSidebar({ items = defaultItems, className }: ClientSidebar
           className="rounded-lg"
         />
         {!collapsed && (
-          <span className="ml-2 font-semibold text-lg text-primary">
+          <span className="ml-2 font-semibold text-lg text-black">
             KarierKu
           </span>
         )}

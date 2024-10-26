@@ -166,7 +166,7 @@ export function LoginForm() {
 
         <Button 
           type="submit" 
-          className="w-full h-11 bg-primary-600 hover:bg-primary-700"
+          className="w-full h-11 bg-primary-600 hover:bg-primary-700 text-white"
           disabled={isLoading}
         >
           {isLoading ? (
