@@ -55,21 +55,21 @@ export async function middleware(request: NextRequest) {
     }
 
     // Protect other API routes based on role
-    if (pathname.includes('/api/admin/')) {
+    if (pathname.includes('/api/admin/login')) {
       const session = await getAdminSession(request);
       if (!session || session.role !== "ADMIN") {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
     }
 
-    if (pathname.includes('/api/mentor/')) {
+    if (pathname.includes('/api/mentor/login')) {
       const session = await getMentorSession(request);
       if (!session || session.role !== "MENTOR") {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
     }
 
-    if (pathname.includes('/api/client/')) {
+    if (pathname.includes('/api/client/login')) {
       const session = await getClientSession(request);
       if (!session || session.role !== "CLIENT") {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
