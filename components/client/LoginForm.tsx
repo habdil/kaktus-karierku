@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -205,16 +205,30 @@ export function LoginForm() {
         </Button>
       </div>
 
-      {/* Sign Up Link */}
-      <p className="text-center text-sm text-muted-foreground">
+      {/* Sign Up and Home Links */}
+      <div className="text-center space-y-4">
+      <p className="text-sm text-muted-foreground">
         Don't have an account?{" "}
         <Link 
           href="/register" 
-          className="font-medium text-secondary-600 hover:text-secondary-700"
+          className="font-medium text-secondary-600 hover:text-secondary-700 hover:underline transition-all"
         >
           Sign up
         </Link>
       </p>
+      
+      <div className="flex items-center justify-center gap-2">
+        <div className="h-px w-12 bg-gray-200"></div>
+        <Link 
+          href="/" 
+          className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary-600 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
+        <div className="h-px w-12 bg-gray-200"></div>
+      </div>
+      </div>
     </div>
   );
 }

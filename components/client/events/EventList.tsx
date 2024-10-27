@@ -1,9 +1,9 @@
-// components/mentor/EventList.tsx
+// components/client/events/EventList.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Calendar, MapPin, ArrowUpRight, User } from "lucide-react";
+import { Calendar, MapPin, ArrowUpRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,27 +11,46 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import { Event } from "@/lib/types";
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  bannerUrl: string;
+  location: string;
+  date: string;
+  admin: {
+    fullName: string;
+  };
+}
 
 interface EventListProps {
   events: Event[];
+  isLoading: boolean;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
 
-export function MentorEventList({ events, searchQuery, onSearchChange }: EventListProps) {
+export function EventList({ events, isLoading, searchQuery, onSearchChange }: EventListProps) {
   const router = useRouter();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[500px]">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading events...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Available Events</CardTitle>
-        <CardDescription>
-          Stay updated with latest events
-        </CardDescription>
+        <CardTitle>Upcoming Events</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Search */}
@@ -49,29 +68,21 @@ export function MentorEventList({ events, searchQuery, onSearchChange }: EventLi
           {events.map((event) => (
             <Card 
               key={event.id} 
-              className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => router.push(`/dashboard-mentor/events/${event.id}`)}
+              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => router.push(`/dashboard/events/${event.id}`)}
             >
               <div className="aspect-video relative">
                 <Image
                   src={event.bannerUrl}
                   alt={event.title}
                   fill
-                  className="object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover"
                 />
               </div>
-              <CardContent className="p-4 space-y-4">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg truncate group-hover:text-primary-600 transition-colors">
-                    {event.title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span>By {event.admin.fullName}</span>
-                  </div>
-                </div>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-lg truncate">{event.title}</h3>
                 
-                <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="mt-2 space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>{formatDate(event.date)}</span>
@@ -84,10 +95,10 @@ export function MentorEventList({ events, searchQuery, onSearchChange }: EventLi
 
                 <Button 
                   variant="ghost" 
-                  className="w-full mt-4 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors"
+                  className="w-full mt-4"
                 >
                   View Details
-                  <ArrowUpRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
             </Card>
@@ -95,13 +106,8 @@ export function MentorEventList({ events, searchQuery, onSearchChange }: EventLi
         </div>
 
         {events.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-lg font-medium text-muted-foreground">
-              No events found
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Try adjusting your search or check back later for new events
-            </p>
+          <div className="text-center py-8 text-muted-foreground">
+            No events found.
           </div>
         )}
       </CardContent>

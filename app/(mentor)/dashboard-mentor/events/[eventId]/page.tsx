@@ -4,7 +4,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ArrowLeft, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,18 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  bannerUrl: string;
-  location: string;
-  date: string;
-  admin: {
-    fullName: string;
-  };
-}
+import { Event } from "@/lib/types";
 
 export default function EventDetailPage({ params }: { params: { eventId: string } }) {
   const router = useRouter();
@@ -115,6 +104,7 @@ export default function EventDetailPage({ params }: { params: { eventId: string 
           </Button>
           <CardTitle className="text-2xl font-bold">{event.title}</CardTitle>
           <CardDescription className="flex items-center gap-2 text-base">
+            <User className="h-4 w-4" />
             Posted by {event.admin.fullName}
           </CardDescription>
         </CardHeader>
@@ -131,48 +121,43 @@ export default function EventDetailPage({ params }: { params: { eventId: string 
             />
           </div>
 
-          {/* Event Details */}
-          <div className="grid gap-6">
-            {/* Date & Location */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Date & Time</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(event.date)}
-                      </p>
-                    </div>
+          {/* Event Info Cards */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Date & Time</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(event.date)}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Location</p>
-                      <p className="text-sm text-muted-foreground">
-                        {event.location}
-                      </p>
-                    </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Location</p>
+                    <p className="text-sm text-muted-foreground">
+                      {event.location}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            {/* Description */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">About This Event</h3>
-              <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-wrap text-muted-foreground">
-                  {event.description}
-                </p>
-              </div>
-            </div>
+          {/* Description */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">About This Event</h3>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {event.description}
+            </p>
           </div>
         </CardContent>
       </Card>

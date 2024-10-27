@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -257,16 +257,30 @@ export default function RegisterPage() {
         </Button>
       </div>
 
-      {/* Login Link */}
-      <p className="text-center text-sm text-muted-foreground">
+      {/* Login and Home Links */}
+      <div className="text-center space-y-4">
+      <p className="text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link 
           href="/login" 
-          className="font-medium text-secondary-600 hover:text-secondary-700 transition-colors"
+          className="font-medium text-secondary-600 hover:text-secondary-700 hover:underline transition-all"
         >
           Sign in
         </Link>
       </p>
+      
+      <div className="flex items-center justify-center gap-2">
+        <div className="h-px w-12 bg-gray-200"></div>
+        <Link 
+          href="/" 
+          className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary-600 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
+        <div className="h-px w-12 bg-gray-200"></div>
+      </div>
+      </div>
     </div>
   );
 }
