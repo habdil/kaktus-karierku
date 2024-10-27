@@ -1,8 +1,9 @@
-// app/api/client/events/route.ts
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+// app/api/public/events/route.ts
 
-const prisma = new PrismaClient();
+import { NextResponse } from "next/server";
+import prisma from '@/lib/prisma';
+
+export const revalidate = 0; // Disable cache
 
 export async function GET() {
   try {
@@ -19,10 +20,17 @@ export async function GET() {
       }
     });
 
+    // Add cache control headers for real-time updates
+    const headers = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+
     return NextResponse.json({
       success: true,
       data: events
-    });
+    }, { headers });
 
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -33,7 +41,5 @@ export async function GET() {
       }, 
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
