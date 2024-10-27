@@ -1,4 +1,4 @@
-// app/(mentor)/dashboard/events/page.tsx
+// app/(mentor)/dashboard-mentor/events/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,30 +14,50 @@ export default function MentorEventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('/api/mentor/events');
-        const data = await response.json();
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch('/api/mentor/events');
+      const data = await response.json();
+      
+      if (data.success) {
+        setEvents(data.data);
         
-        if (data.success) {
-          setEvents(data.data);
-        } else {
-          throw new Error(data.error);
+        // Update selectedEvent jika ada
+        if (selectedEvent) {
+          const updatedEvent = data.data.find(
+            (event: Event) => event.id === selectedEvent.id
+          );
+          if (updatedEvent) {
+            setSelectedEvent(updatedEvent);
+          }
         }
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load events"
-        });
-      } finally {
-        setIsLoading(false);
+      } else {
+        throw new Error(data.error);
       }
-    };
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load events"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Initial fetch
+  useEffect(() => {
     fetchEvents();
-  }, [toast]);
+  }, []);
+
+  // Polling setiap 10 detik
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchEvents();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [selectedEvent]); // Tambahkan selectedEvent sebagai dependency
 
   if (isLoading) {
     return (
@@ -50,17 +70,37 @@ export default function MentorEventsPage() {
     );
   }
 
+  // Handler untuk view detail dengan validasi
+  const handleViewDetail = (event: Event) => {
+    // Cek apakah event masih ada di daftar events
+    const currentEvent = events.find(e => e.id === event.id);
+    if (currentEvent) {
+      setSelectedEvent(currentEvent);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Event not found or has been deleted"
+      });
+      setSelectedEvent(null);
+    }
+  };
+
   return (
     <div className="p-6">
       {selectedEvent ? (
         <EventDetail 
           event={selectedEvent}
-          onBack={() => setSelectedEvent(null)}
+          onBack={() => {
+            setSelectedEvent(null);
+            // Refresh data saat kembali ke list
+            fetchEvents();
+          }}
         />
       ) : (
         <MentorEventList
           events={events}
-          onViewDetail={setSelectedEvent}
+          onViewDetail={handleViewDetail}
         />
       )}
     </div>

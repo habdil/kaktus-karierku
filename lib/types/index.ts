@@ -10,3 +10,14 @@ export interface Event {
       fullName: string;
     }
   }
+
+  // types/index.ts
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: 'EVENT' | 'OTHER';
+    createdAt: string;
+    read: boolean;
+    eventId?: string;
+  }

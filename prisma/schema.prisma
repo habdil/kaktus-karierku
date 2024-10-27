@@ -56,6 +56,7 @@ model Mentor {
   consultations   Consultation[]
   availableSlots  ConsultationSlot[]
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
 }
 
 model Event {
@@ -71,6 +72,7 @@ model Event {
  updatedAt     DateTime            @updatedAt
  admin         Admin               @relation(fields: [adminId], references: [id], onDelete: Cascade)  // Tambahkan onDelete: Cascade
  registrations EventRegistration[]
+  notifications Notification[]
 
  @@index([adminId])  // Tambahkan index untuk foreign key
 }
@@ -85,6 +87,23 @@ model Admin {
  events    Event[]
 
  @@index([userId])  // Tambahkan index untuk foreign key
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   // 'EVENT' | 'OTHER'
+  read      Boolean  @default(false)
+  mentorId  String
+  eventId   String?
+  mentor    Mentor   @relation(fields: [mentorId], references: [id])
+  event     Event?   @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mentorId])
+  @@index([eventId])
 }
 
 model EventRegistration {

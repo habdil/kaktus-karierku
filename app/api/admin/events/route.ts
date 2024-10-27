@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 // GET all events
 export async function GET() {
   try {
+
     const events = await prisma.event.findMany({
       orderBy: {
         createdAt: 'desc'
@@ -85,27 +86,53 @@ export async function POST(request: Request) {
       );
     }
 
-    const event = await prisma.event.create({
-      data: {
-        title,
-        description,
-        bannerUrl,
-        location,
-        date: new Date(date),
-        adminId: admin.id // Gunakan admin.id bukan session.id
-      },
-      include: {
-        admin: {
-          select: {
-            fullName: true
+    // Buat event dalam transaction untuk memastikan konsistensi data
+    const result = await prisma.$transaction(async (tx) => {
+      // Buat event
+      const event = await tx.event.create({
+        data: {
+          title,
+          description,
+          bannerUrl,
+          location,
+          date: new Date(date),
+          adminId: admin.id
+        },
+        include: {
+          admin: {
+            select: {
+              fullName: true
+            }
           }
         }
+      });
+
+      // Buat notifikasi untuk semua mentor
+      const mentors = await tx.mentor.findMany({
+        where: {
+          status: 'ACTIVE'
+        },
+        select: { id: true }
+      });
+
+      if (mentors.length > 0) {
+        await tx.notification.createMany({
+          data: mentors.map(mentor => ({
+            title: "New Event Available!",
+            message: `Admin just posted a new event: "${title}"`,
+            type: "EVENT",
+            mentorId: mentor.id,
+            eventId: event.id
+          }))
+        });
       }
+
+      return event;
     });
 
     return NextResponse.json({
       success: true,
-      data: event
+      data: result
     });
 
   } catch (error) {
