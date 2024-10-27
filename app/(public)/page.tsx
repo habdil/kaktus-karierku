@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, CalendarIcon, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UpcomingEvents } from "@/components/public/UpcomingEvents";
 
 export default function Home() {
   return (
@@ -125,99 +126,7 @@ export default function Home() {
       {/* Upcoming Events Section */}
       <section className="py-24 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-primary-900">
-                Event Mendatang
-              </h2>
-              <p className="mt-2 text-lg text-muted-foreground">
-                Jangan lewatkan event-event menarik dari kami
-              </p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link href="/events" className="group">
-                Lihat Semua Event
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {/* Event Card 1 */}
-            <div className="group relative rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-lg">
-              <div className="aspect-[16/9] overflow-hidden">
-                <Image
-                  src="/images/event-1.png"
-                  alt="Career Workshop"
-                  width={600}
-                  height={400}
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>24 Oktober 2024</span>
-                </div>
-                <h3 className="mt-2 text-xl font-semibold text-primary-900">
-                  Workshop: Future of Work
-                </h3>
-                <p className="mt-2 text-muted-foreground">
-                  Pelajari keterampilan yang dibutuhkan untuk karir masa depan
-                </p>
-              </div>
-            </div>
-
-            {/* Event Card 2 */}
-            <div className="group relative rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-lg">
-              <div className="aspect-[16/9] overflow-hidden">
-                <Image
-                  src="/images/event-2.png"
-                  alt="Tech Talk"
-                  width={600}
-                  height={400}
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>28 Oktober 2024</span>
-                </div>
-                <h3 className="mt-2 text-xl font-semibold text-primary-900">
-                  Tech Talk: AI & Karir
-                </h3>
-                <p className="mt-2 text-muted-foreground">
-                  Dampak AI terhadap perkembangan karir di era digital
-                </p>
-              </div>
-            </div>
-
-            {/* Event Card 3 */}
-            <div className="group relative rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-lg">
-              <div className="aspect-[16/9] overflow-hidden">
-                <Image
-                  src="/images/event-3.png"
-                  alt="Networking Event"
-                  width={600}
-                  height={400}
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>1 November 2024</span>
-                </div>
-                <h3 className="mt-2 text-xl font-semibold text-primary-900">
-                  Networking: Industry Connect
-                </h3>
-                <p className="mt-2 text-muted-foreground">
-                  Bangun koneksi dengan profesional dari berbagai industri
-                </p>
-              </div>
-            </div>
-          </div>
+          <UpcomingEvents />
         </div>
       </section>
 

@@ -118,18 +118,31 @@ model EventRegistration {
 }
 
 model Consultation {
-  id        String             @id @default(cuid())
-  clientId  String
-  mentorId  String
-  status    ConsultationStatus
-  zoomLink  String?
-  slotId    String?
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  client    Client             @relation(fields: [clientId], references: [id])
-  mentor    Mentor             @relation(fields: [mentorId], references: [id])
-  slot      ConsultationSlot?  @relation(fields: [slotId], references: [id])
-  messages  Message[]
+  id            String             @id @default(cuid())
+  clientId      String
+  mentorId      String
+  status        ConsultationStatus
+  zoomLink      String?   
+  slotId        String?
+  // Fields baru
+  rating        Int?              // Rating 1-5
+  review        String?           // Review dari client
+  cancelledAt   DateTime?         // Waktu pembatalan jika ada
+  cancelReason  String?           // Alasan pembatalan
+  lastMessageAt DateTime?         // Waktu pesan terakhir
+  mentorNotes   String?           // Catatan mentor
+  // Relations
+  client        Client            @relation(fields: [clientId], references: [id])
+  mentor        Mentor            @relation(fields: [mentorId], references: [id])
+  slot          ConsultationSlot? @relation(fields: [slotId], references: [id])
+  messages      Message[]
+  attachments   ConsultationAttachment[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([clientId])
+  @@index([mentorId])
+  @@index([slotId])
 }
 
 model ConsultationSlot {
@@ -138,10 +151,18 @@ model ConsultationSlot {
   startTime     DateTime
   endTime       DateTime
   isBooked      Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  // Fields baru
+  duration      Int            // Durasi dalam menit
+  maxBookings   Int            @default(1)  // Jumlah booking maksimal
+  isRecurring   Boolean        @default(false)
+  recurringDays Int[]          // [1,3,5] untuk Senin, Rabu, Jumat
+  // Relations
   consultations Consultation[]
   mentor        Mentor         @relation(fields: [mentorId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([mentorId])
 }
 
 model Message {
@@ -149,8 +170,15 @@ model Message {
   consultationId String
   senderId       String
   content        String
-  createdAt      DateTime     @default(now())
+  // Fields baru
+  readAt         DateTime?    // Waktu dibaca
+  type           MessageType  @default(TEXT)  // Tipe pesan
+  // Relations
   consultation   Consultation @relation(fields: [consultationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([consultationId])
+  @@index([senderId])
 }
 
 model CareerAssessment {
@@ -161,6 +189,20 @@ model CareerAssessment {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   client         Client   @relation(fields: [clientId], references: [id])
+}
+
+model ConsultationAttachment {
+  id             String       @id @default(cuid())
+  consultationId String
+  fileName       String
+  fileUrl        String
+  fileType       String
+  fileSize       Int
+  uploadedBy     String
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([consultationId])
 }
 
 model ClientMentor {
@@ -176,16 +218,23 @@ model ClientMentor {
   @@unique([clientId, mentorId])
 }
 
-enum Role {
-  ADMIN
-  MENTOR
-  CLIENT
+enum MessageType {
+  TEXT
+  FILE
+  SYSTEM
 }
 
 enum ConsultationStatus {
   PENDING
   ACTIVE
   COMPLETED
+  CANCELLED    // Status baru
+}
+
+enum Role {
+  ADMIN
+  MENTOR
+  CLIENT
 }
 
 enum ClientStatus {
