@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && npx prisma generate",
+    "build": "prisma generate && next build",
     "start": "next start",
     "create-admin": "ts-node -r tsconfig-paths/register -P tsconfig.scripts.json ./app/scripts/createAdmin.ts",
     "test-storage": "node scripts/testStorage.js",
-    "prisma:generate": "prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
