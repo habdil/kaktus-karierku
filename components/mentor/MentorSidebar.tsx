@@ -32,7 +32,7 @@ const defaultItems: SidebarItem[] = [
   },
   {
     title: "Konsultasi",
-    href: "/dashboard-mentor/konsultasi",
+    href: "/dashboard-mentor/consultation",
     icon: <MessageSquare className="h-5 w-5" />,
   },
   {

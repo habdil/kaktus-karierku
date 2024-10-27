@@ -1,3 +1,4 @@
+import { FeatureMaintenance } from "@/components/shared/FeatureMaintanace";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -16,8 +17,12 @@ export default function MentorDashboardPage() {
           </p>
         </div>
       </div>
-      
-      {/* Content will be added later */}
+      <div className="flex justify-center items-center h-screen">
+      <FeatureMaintenance
+          title="Tahap Pengambangan"
+          description="Kami sedang mengembangkan fitur ini untuk memperbaiki dan meningkatkan kualitas layanan kami."
+      />
+  </div>
     </div>
   );
 }
