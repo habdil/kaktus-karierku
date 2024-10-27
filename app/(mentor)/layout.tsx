@@ -17,7 +17,7 @@ export default function MentorDashboardLayout({
     <div className="min-h-screen flex bg-background">
       <MentorSidebar />
       <div className="flex-1 flex flex-col">
-        <MentorHeader mentorName="John Doe" notificationCount={3} />
+        <MentorHeader mentorName="John Doe" />
         <main className="flex-1 overflow-auto p-6">
           {children}
         </main>
