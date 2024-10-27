@@ -16,31 +16,70 @@ import { formatDate } from "@/lib/utils"
 import { Event } from "@/lib/types"
 import { useEffect, useState } from "react"
 import { EventListSkeleton } from "./event-list-skeleton"
+import { useDebounce } from "@/hooks/useDebounce" // Assume this hook exists
 
 interface PublicEventListProps {
   searchQuery: string
   onSearchChange: (query: string) => void
 }
 
+interface PaginationMetadata {
+  currentPage: number
+  totalPages: number
+  pageSize: number
+  totalEvents: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
+
 export function PublicEventList({ searchQuery, onSearchChange }: PublicEventListProps) {
   const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const debouncedSearch = useDebounce(searchQuery, 500)
 
-  useEffect(() => {
-    async function fetchEvents() {
+  const fetchEvents = async (page: number, search?: string) => {
+    try {
       setLoading(true)
-      const response = await fetch("/api/public/events")
+      setError(null)
+
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        pageSize: "9", // Matches grid layout
+        ...(search && { search }),
+        showPast: "false" // Only show upcoming events
+      })
+
+      const response = await fetch(`/api/public/events?${queryParams}`)
       const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch events")
+      }
+
       if (data.success) {
         setEvents(data.data)
+        setPagination(data.pagination)
+      } else {
+        throw new Error(data.error)
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred")
+      setEvents([])
+    } finally {
       setLoading(false)
     }
-    fetchEvents()
-  }, [])
+  }
 
-  if (loading) {
+  // Fetch events when page or search changes
+  useEffect(() => {
+    fetchEvents(currentPage, debouncedSearch)
+  }, [currentPage, debouncedSearch])
+
+  if (loading && !events.length) {
     return <EventListSkeleton />
   }
 
@@ -60,6 +99,12 @@ export function PublicEventList({ searchQuery, onSearchChange }: PublicEventList
             className="max-w-md"
           />
         </div>
+
+        {error && (
+          <div className="text-center py-4 text-red-500">
+            {error}
+          </div>
+        )}
 
         {/* Events Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -111,13 +156,38 @@ export function PublicEventList({ searchQuery, onSearchChange }: PublicEventList
           ))}
         </div>
 
-        {events.length === 0 && (
+        {/* Pagination */}
+        {pagination && (
+          <div className="mt-6 flex justify-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage(prev => prev - 1)}
+              disabled={!pagination.hasPreviousPage}
+            >
+              Previous
+            </Button>
+            <span className="py-2 px-4">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              disabled={!pagination.hasNextPage}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+
+        {events.length === 0 && !loading && !error && (
           <div className="text-center py-12">
             <p className="text-lg font-medium text-muted-foreground">
               No events found
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Try adjusting your search or check back later for new events
+              {searchQuery 
+                ? "Try adjusting your search criteria"
+                : "Check back later for new events"}
             </p>
           </div>
         )}
