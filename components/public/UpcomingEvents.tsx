@@ -12,7 +12,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { formatDate } from "@/lib/utils"
 import { Event } from "@/lib/types"
 import { useEffect, useState } from "react"
-import { EventListSkeleton } from "./event-list-skeleton"
+import { UpcomingEventSkeleton } from "./upcoming-event-skeleton"
 
 export function UpcomingEvents() {
   const router = useRouter()
@@ -33,7 +33,7 @@ export function UpcomingEvents() {
   }, [])
 
   if (loading) {
-    return <EventListSkeleton />
+    return <UpcomingEventSkeleton />
   }
 
   return (
