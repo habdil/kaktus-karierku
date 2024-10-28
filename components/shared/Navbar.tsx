@@ -5,9 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoginForm } from "../client/LoginForm";
+import RegisterFormComponent from "../client/RegisterForm";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegistOpen, setIsRegistOpen] = useState(false);
 
   const navItems = [
     { name: "Beranda", href: "/" },
@@ -15,6 +19,14 @@ const Navbar = () => {
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const handleOpenLogin = () => {
+    setIsLoginOpen(true);
+  };
+
+  const handleOpenRegister = () => {
+    setIsRegistOpen(true);
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -49,11 +61,11 @@ const Navbar = () => {
 
           {/* Login Button */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Log in</Link>
+            <Button variant="ghost" onClick={handleOpenLogin}>
+              Log in
             </Button>
-            <Button className=" text-gray-50 bg-primary-600 hover:bg-primary-700" asChild>
-              <Link href="/register">Sign up</Link>
+            <Button className=" text-gray-50 bg-primary-600 hover:bg-primary-700" onClick={handleOpenRegister}>
+              Sign up
             </Button>
           </div>
 
@@ -89,16 +101,20 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="grid gap-2 px-3 py-2">
-              <Button variant="ghost" className="w-full justify-center bg-gray-100" asChild>
-                <Link href="/login">Log in</Link>
+              <Button variant="ghost" className="w-full justify-center bg-gray-100" onClick={handleOpenLogin}>
+                Log in
               </Button>
-              <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" asChild>
-                <Link href="/register">Sign up</Link>
+              <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" onClick={handleOpenRegister}>
+                Register
               </Button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Dialog Components */}
+      <LoginForm isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <RegisterFormComponent isRegisterOpen={isRegistOpen} onClose={() => setIsRegistOpen(false)} />
     </nav>
   );
 };
