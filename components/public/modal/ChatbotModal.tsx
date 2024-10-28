@@ -21,7 +21,6 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-
             <DialogContent>
                 <DialogHeader>
                     <h2 className='text-xl font-semibold leading-none tracking-tight'>Tanya Kami</h2>
