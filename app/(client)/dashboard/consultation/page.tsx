@@ -1,14 +1,5 @@
-import { FeatureMaintenance } from "@/components/shared/FeatureMaintanace";
+import MentorList from '@/components/client/consultations/MentorList'
 
-const ConsultationPage = () => {
-    return ( 
-        <div className="flex justify-center items-center h-screen">
-            <FeatureMaintenance
-                title="Tahap Pengambangan"
-                description="Kami sedang mengembangkan fitur ini untuk memperbaiki dan meningkatkan kualitas layanan kami."
-            />
-        </div>
-     );
+export default function MentorsPage() {
+  return <MentorList />
 }
- 
-export default ConsultationPage;
