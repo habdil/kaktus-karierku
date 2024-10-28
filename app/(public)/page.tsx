@@ -99,8 +99,8 @@ export default function Home() {
         </div>
       </section>
 
-        {/* CTA Section */}
-        <section className="bg-secondary-500 py-24">
+      {/* CTA Section */}
+      <section className="bg-secondary-500 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
