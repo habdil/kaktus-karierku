@@ -1,10 +1,24 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, CalendarIcon, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UpcomingEvents } from "@/components/public/UpcomingEvents";
+import { useState } from "react";
+import { LoginForm } from "@/components/client/LoginForm";
+import RegisterFormComponent from "@/components/client/RegisterForm";
 
 export default function Home() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegistOpen, setIsRegistOpen] = useState(false);
+
+  const handleOpenLogin = () => {
+    setIsLoginOpen(true);
+  }
+
+  const handleOpenRegister = () => {
+    setIsRegistOpen(true);
+  }
   return (
     <div className="w-full overflow-x-hidden">
       {/* Hero Section */}
@@ -22,13 +36,14 @@ export default function Home() {
                 dan program pengembangan yang dirancang khusus untukmu.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white" asChild>
-                  <Link href="/register">Mulai Sekarang</Link>
+                <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white" onClick={handleOpenLogin}>
+                  Mulai Sekarang
                 </Button>
                 <Button size="lg" variant="outline" asChild>
                   <Link href="/about">Pelajari Lebih Lanjut</Link>
                 </Button>
               </div>
+              <LoginForm isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
             </div>
             <div className="relative hidden lg:block">
               <Image
@@ -112,14 +127,15 @@ export default function Home() {
             <Button
               size="lg"
               className="mt-8 bg-white text-secondary-600 hover:bg-white/90"
-              asChild
+              onClick={handleOpenRegister}
+
             >
-              <Link href="/register" className="group">
-                Daftar Sekarang
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+              Daftar Sekarang
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+
             </Button>
           </div>
+          <RegisterFormComponent isRegisterOpen={isRegistOpen} onClose={() => setIsRegistOpen(false)} />
         </div>
       </section>
 
