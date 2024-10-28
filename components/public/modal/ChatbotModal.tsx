@@ -47,7 +47,7 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
                         />
                         <DialogFooter>
                             <Button onClick={handleSendMessage} className='text-white bg-primary-600 shadow-sm hover:bg-primary-700 transition-all duration-300'>
-                                Send
+                                Kirim
                             </Button>
                         </DialogFooter>
                     </div>

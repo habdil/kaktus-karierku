@@ -36,10 +36,10 @@ export default function Home() {
                 dan program pengembangan yang dirancang khusus untukmu.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white" onClick={handleOpenLogin}>
+                <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white transition-all duration-300" onClick={handleOpenLogin}>
                   Mulai Sekarang
                 </Button>
-                <Button size="lg" variant="outline" asChild>
+                <Button size="lg" variant="outline" asChild className="transition-all duration-300">
                   <Link href="/about">Pelajari Lebih Lanjut</Link>
                 </Button>
               </div>
@@ -126,7 +126,7 @@ export default function Home() {
             </p>
             <Button
               size="lg"
-              className="mt-8 bg-white text-secondary-600 hover:bg-white/90"
+              className="mt-8 bg-white text-secondary-600 hover:bg-white/90 transition-all duration-300"
               onClick={handleOpenRegister}
 
             >
