@@ -106,7 +106,7 @@ export default function RegisterFormComponent({ isRegisterOpen, onClose }: { isR
     };
 
     return (
-        <Dialog open={isRegisterOpen} onOpenChange={onClose}>
+        <Dialog open={isRegisterOpen} onOpenChange={onClose} >
             <DialogContent>
                 <div className="bg-white rounded-2xl shadow-xl p-8 space-y-8">
                     {/* Logo & Title */}
