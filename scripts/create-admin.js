@@ -11,13 +11,13 @@ async function createTestAdmin() {
     // Create admin user
     const user = await prisma.user.create({
       data: {
-        email: 'admin@test.com',
+        email: 'habdil@admin.com',
         username: 'admin',
         password: hashedPassword,
         role: 'ADMIN',
         admin: {
           create: {
-            fullName: 'Admin Test'
+            fullName: 'HABDIL IQRAWARDANA'
           }
         }
       },

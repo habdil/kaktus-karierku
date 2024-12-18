@@ -3,86 +3,115 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getMentorSession } from "@/lib/auth";
 
-// Fetch all clients for a mentor
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getMentorSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
     }
 
-    console.log("Fetching clients for mentor:", session.mentorId);
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get('search');
 
-    const clientMentorRelations = await prisma.clientMentor.findMany({
-      where: {
-        mentorId: session.mentorId,
-      },
-      include: {
-        client: {
-          include: {
-            user: {
+    // Query langsung ke tabel Client
+    const clients = await prisma.client.findMany({
+      select: {
+        id: true,
+        fullName: true,
+        major: true,
+        interests: true,
+        hobbies: true,
+        dreamJob: true,
+        currentStatus: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            email: true,
+            image: true,
+            createdAt: true
+          }
+        },
+        careerAssessments: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1,
+          select: {
+            id: true,
+            geminiResponse: true,
+            createdAt: true
+          }
+        },
+        consultations: {
+          where: {
+            mentorId: session.mentorId
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1,
+          select: {
+            id: true,
+            status: true,
+            createdAt: true,
+            messages: {
+              orderBy: {
+                createdAt: 'desc'
+              },
+              take: 1,
               select: {
-                email: true,
-                image: true
+                content: true,
+                createdAt: true,
+                status: true
               }
-            },
-            careerAssessments: {
-              orderBy: {
-                createdAt: 'desc'
-              },
-              take: 1,
-            },
-            consultations: {
-              where: {
-                mentorId: session.mentorId
-              },
-              orderBy: {
-                createdAt: 'desc'
-              },
-              take: 1,
-            },
-            notifications: {
-              orderBy: {
-                createdAt: 'desc'
-              },
-              take: 5,
             }
           }
         }
       },
+      where: search ? {
+        OR: [
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { major: { contains: search, mode: 'insensitive' } },
+          { dreamJob: { contains: search, mode: 'insensitive' } },
+          { user: { email: { contains: search, mode: 'insensitive' } } }
+        ]
+      } : {},
       orderBy: {
         createdAt: 'desc'
-      },
+      }
     });
 
-    const formattedClients = clientMentorRelations.map((relation) => ({
-      id: relation.client.id,
-      fullName: relation.client.fullName,
-      email: relation.client.user.email,
-      image: relation.client.user.image,
-      major: relation.client.major,
-      currentStatus: relation.client.currentStatus,
-      dreamJob: relation.client.dreamJob,
-      interests: relation.client.interests,
-      hobbies: relation.client.hobbies,
-      mentorshipStatus: relation.status,
-      lastConsultation: relation.client.consultations[0] || null,
-      careerAssessment: relation.client.careerAssessments[0] || null,
-      recentNotifications: relation.client.notifications,
-      relationCreatedAt: relation.createdAt
+    const formattedClients = clients.map((client) => ({
+      id: client.id,
+      fullName: client.fullName,
+      email: client.user.email,
+      image: client.user.image,
+      major: client.major,
+      currentStatus: client.currentStatus,
+      dreamJob: client.dreamJob,
+      interests: client.interests,
+      hobbies: client.hobbies,
+      mentorshipStatus: 'NEW', // Default status karena tidak menggunakan ClientMentor
+      lastConsultation: client.consultations[0] || null,
+      lastMessage: client.consultations[0]?.messages[0] || null,
+      careerAssessment: client.careerAssessments[0] || null,
+      joinedDate: client.user.createdAt,
+      relationCreatedAt: client.createdAt,
+      relationUpdatedAt: client.updatedAt
     }));
 
     return NextResponse.json(formattedClients);
+
   } catch (error) {
     console.error("[GET Clients] Error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch clients", details: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Failed to fetch clients" },
       { status: 500 }
     );
   }
 }
-
-// Add new client to mentor
+// POST Method - Menambahkan client baru
 export async function POST(req: Request) {
   try {
     const session = await getMentorSession();
@@ -131,7 +160,7 @@ export async function POST(req: Request) {
       }
     });
 
-    // Create notification for client
+    // Buat notifikasi untuk client
     await prisma.notification.create({
       data: {
         title: "New Mentor Assignment",
@@ -143,6 +172,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(clientMentor);
+
   } catch (error) {
     console.error("[POST Client] Error:", error);
     return NextResponse.json(

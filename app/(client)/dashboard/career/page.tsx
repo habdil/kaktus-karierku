@@ -1,15 +1,26 @@
+// app/(client)/dashboard/career/page.tsx
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CareerPersonalizationForm from "@/components/client/personalisasi/Personalisasi";
 import { LoadingBars } from "@/components/ui/loading-bars";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { AlertCircle } from "lucide-react";
 
 export default function CareerPersonalizationPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasAssessment, setHasAssessment] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
     const checkExistingAssessment = async () => {
@@ -17,7 +28,6 @@ export default function CareerPersonalizationPage() {
         const response = await fetch("/api/client/career-assessment/check", {
           method: "GET",
         });
-
         if (response.ok) {
           const data = await response.json();
           if (data.hasAssessment) {
@@ -25,6 +35,8 @@ export default function CareerPersonalizationPage() {
             router.push("/dashboard/career/results");
             return;
           }
+          // Only show warning if user hasn't completed an assessment
+          setShowWarning(true);
         }
       } catch (error) {
         console.error("Error checking assessment:", error);
@@ -32,14 +44,17 @@ export default function CareerPersonalizationPage() {
         setLoading(false);
       }
     };
-
     checkExistingAssessment();
   }, [router]);
+
+  const handleWarningClose = () => {
+    setShowWarning(false);
+  };
 
   if (loading || hasAssessment) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <LoadingBars text="Mengunduh data..." />
+        <LoadingBars text="Loading data..." />
       </div>
     );
   }
@@ -47,25 +62,63 @@ export default function CareerPersonalizationPage() {
   if (submitting) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <LoadingBars text="Memproses personalisasi karir Anda..." />
+        <LoadingBars text="Processing your career personalization..." />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-primary-900">
-            Personalisasi Karir
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Isi form berikut untuk mendapatkan rekomendasi karir yang sesuai dengan profil Anda
-          </p>
-        </div>
+    <>
+      <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+        <AlertDialogContent className="max-w-[500px]">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertCircle className="h-5 w-5" />
+              <AlertDialogTitle>Important Notice</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Please read carefully before proceeding with the career assessment form:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  This assessment can only be taken <span className="font-semibold">once per account</span>
+                </li>
+                <li>
+                  Take your time to provide thoughtful and honest answers for the most accurate recommendations
+                </li>
+                <li>
+                  The AI analysis will be based solely on your responses, so accuracy is crucial
+                </li>
+              </ul>
+              <p className="mt-4 font-medium text-primary">
+                Are you ready to proceed with the assessment?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="text-white" onClick={handleWarningClose}>
+              Yes, I understand and want to proceed
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <CareerPersonalizationForm setSubmitting={setSubmitting} />
-      </div>
-    </div>
+      {!showWarning && (
+        <div className="container mx-auto py-8">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl font-bold text-primary-900">
+                Career Personalization
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Fill out the following form to get career recommendations tailored to your profile
+              </p>
+            </div>
+            <CareerPersonalizationForm setSubmitting={setSubmitting} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -127,6 +127,23 @@ export async function POST(request: Request) {
         });
       }
 
+      // Buat notifikasi untuk semua client
+      const clients = await tx.client.findMany({
+        select: { id: true }
+      });
+
+      if (clients.length > 0) {
+        await tx.notification.createMany({
+          data: clients.map(client => ({
+            title: "New Event Available!",
+            message: `A new event has been added: "${title}"`,
+            type: "EVENT",
+            clientId: client.id,
+            eventId: event.id
+          }))
+        });
+      }      
+
       return event;
     });
 

@@ -113,28 +113,36 @@ model Admin {
  updatedAt DateTime @updatedAt
  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
  events    Event[]
+ notifications Notification[]
 
  @@index([userId])  // Tambahkan index untuk foreign key
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  title     String
-  message   String
-  type      String   // 'EVENT' | 'OTHER'
-  read      Boolean  @default(false)
-  mentorId  String
-  clientId  String?  // Tambahkan field clientId
-  eventId   String?
-  mentor    Mentor   @relation(fields: [mentorId], references: [id])
-  client    Client?  @relation(fields: [clientId], references: [id]) // Perbaiki relasi
-  event     Event?   @relation(fields: [eventId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String   @id @default(cuid()) // Primary Key
+  title     String   // Judul notifikasi
+  message   String   @db.Text // Isi pesan notifikasi
+  type      NotificationType // Jenis notifikasi
+  read      Boolean  @default(false) // Status baca
+  adminId   String?  // Foreign Key ke Admin
+  mentorId  String?  // Foreign Key ke Mentor
+  clientId  String?  // Foreign Key ke Client
+  eventId   String?  // Foreign Key ke Event
+  createdAt DateTime @default(now()) // Waktu pembuatan
+  updatedAt DateTime @updatedAt      // Waktu pembaruan otomatis
 
+  // Relasi
+  mentor Mentor? @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  event  Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  admin  Admin?  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+
+  // Index untuk optimasi query
   @@index([mentorId])
   @@index([clientId])
   @@index([eventId])
+  @@index([adminId])
 }
 
 model EventRegistration {
@@ -308,12 +316,13 @@ enum MentorStatus {
 }
 
 enum NotificationType {
-  EVENT
-  CONSULTATION
-  CAREER_ASSESSMENT
-  MENTOR_RECOMMENDATION
-  OTHER
+  EVENT              // Notifikasi terkait event
+  CONSULTATION       // Notifikasi konsultasi
+  CAREER_ASSESSMENT  // Notifikasi assessment karier
+  MENTOR_RECOMMENDATION // Notifikasi rekomendasi mentor
+  OTHER              // Notifikasi lainnya
 }
+
 
 enum RecommendationStatus {
   PENDING

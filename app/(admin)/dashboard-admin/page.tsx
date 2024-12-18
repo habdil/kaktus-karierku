@@ -12,6 +12,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MentorActivities } from "@/components/admin/dashboard/MentorActivities";
 
 export default function AdminDashboardPage() {
   const { analytics, activities, isLoading, isError } = useDashboardData();
@@ -100,50 +101,56 @@ export default function AdminDashboardPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <Suspense fallback={<LoadingBars text="Loading overview cards..." />}>
-            {analytics && <OverviewCards analytics={analytics.overview} />}
-          </Suspense>
+        <Suspense fallback={<LoadingBars text="Loading overview cards..." />}>
+          {analytics && <OverviewCards analytics={analytics.overview} />}
+        </Suspense>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="col-span-2">
-              <Card className="overflow-hidden">
-                <CardHeader className="bg-primary/5">
-                  <CardTitle className="text-lg font-semibold">User Growth Trends</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <Suspense fallback={<LoadingBars text="Loading user growth data..." />}>
-                    {analytics && (
-                      <UserGrowthChart 
-                        data={analytics.userGrowth.map(item => ({
-                          date: new Date(item.createdAt).toLocaleDateString(),
-                          count: item._count.id
-                        }))} 
-                      />
-                    )}
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div>
-              <Card className="h-full w-full">
-                <CardHeader className="bg-primary/5">
-                  <CardTitle className="text-lg font-semibold">Recent Activities</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <Suspense fallback={<LoadingBars text="Loading recent activities..." />}>
-                    {activities && (
-                      <RecentActivitiesList 
-                        activities={transformActivities()}
-                      />
-                    )}
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="col-span-2">
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-primary/5">
+                <CardTitle className="text-lg font-semibold">User Growth Trends</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <Suspense fallback={<LoadingBars text="Loading user growth data..." />}>
+                  {analytics && (
+                    <UserGrowthChart 
+                      data={analytics.userGrowth.map(item => ({
+                        date: new Date(item.createdAt).toLocaleDateString(),
+                        count: item._count.id
+                      }))} 
+                    />
+                  )}
+                </Suspense>
+              </CardContent>
+            </Card>
           </div>
-        </TabsContent>
-      </Tabs>
+
+          <div>
+            <Card className="h-full w-full">
+              <CardHeader className="bg-primary/5">
+                <CardTitle className="text-lg font-semibold">Recent Activities</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <Suspense fallback={<LoadingBars text="Loading recent activities..." />}>
+                  {activities && (
+                    <RecentActivitiesList 
+                      activities={transformActivities()}
+                    />
+                  )}
+                </Suspense>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <Suspense fallback={<LoadingBars text="Loading mentor activities..." />}>
+              <MentorActivities />
+            </Suspense>
+          </div>
+        </div>
+      </TabsContent>
+    </Tabs>
     </div>
   );
 }

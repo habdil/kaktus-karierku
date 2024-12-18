@@ -222,7 +222,7 @@ const CareerPersonalizationForm = ({ setSubmitting }: CareerPersonalizationFormP
         {step === 3 && (
           <div className="space-y-4">
             {renderArrayInput("skills", "Keterampilan", "Tambahkan keterampilan Anda")}
-            {renderArrayInput("strengths", "Kekuatan", "Tambahkan kekuatan Anda")}
+            {renderArrayInput("strengths", "Keunggulan", "Tambahkan keunggulan Anda")}
           </div>
         )}
 
@@ -276,12 +276,12 @@ const CareerPersonalizationForm = ({ setSubmitting }: CareerPersonalizationFormP
         </Button>
 
         {step < totalSteps ? (
-          <Button onClick={handleNext}>
+          <Button onClick={handleNext} className="text-white">
             Selanjutnya
-            <ChevronRight className="w-4 h-4 ml-2" />
+            <ChevronRight className="w-4 h-4 ml-2 texet-white" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit}>
+          <Button onClick={handleSubmit} className="text-white">
             Submit
           </Button>
         )}

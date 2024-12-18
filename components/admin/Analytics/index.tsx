@@ -20,22 +20,13 @@ import {
 } from "./AnalyticsCharts";
 
 export function Analytics() {
-  const { data, isLoading, error } = useAnalytics();
+  const { data, isLoading } = useAnalytics();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingBars text="Memuat data analytics..." />
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
     );
   }
 

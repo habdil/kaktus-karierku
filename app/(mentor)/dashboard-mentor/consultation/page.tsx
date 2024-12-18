@@ -144,8 +144,10 @@ export default function MentorConsultationsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingBars />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2">
+              <LoadingBars />
+        </div>
       </div>
     );
   }

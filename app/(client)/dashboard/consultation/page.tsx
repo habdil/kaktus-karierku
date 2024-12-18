@@ -1,6 +1,4 @@
-// app/(client)/dashboard/consultation/page.tsx
 "use client";
-
 import { useState, useEffect } from "react";
 import ConsultationList from "@/components/client/consultations/ConsultationList";
 import { ConsultationDetails } from "@/lib/types/consultations";
@@ -15,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useConsultationSSE } from "@/hooks/useConsultationSSE";
+import { PlusCircle } from "lucide-react";
 
 export default function ConsultationsPage() {
   const [consultations, setConsultations] = useState<ConsultationDetails[]>([]);
@@ -27,9 +26,7 @@ export default function ConsultationsPage() {
       setLoading(true);
       const res = await fetch("/api/client/consultations");
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error);
-
       setConsultations(data);
     } catch (error) {
       toast({
@@ -58,44 +55,61 @@ export default function ConsultationsPage() {
     return consultation.status === filter;
   });
 
+  const navigateToMentors = () => {
+    window.location.href = "/dashboard/consultation/available-mentors";
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <LoadingBars />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Consultations</h1>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="CANCELLED">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold">My Consultations</h1>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="COMPLETED">Completed</SelectItem>
+              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={navigateToMentors}
+            className="flex items-center justify-center gap-2 text-white w-full sm:w-auto"
+          >
+            <PlusCircle className="w-4 h-4 text-white" />
+            <span>Find a Mentor</span>
+          </Button>
+        </div>
       </div>
 
       {filteredConsultations.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground">No consultations found</p>
-          <Button
-            className="mt-4"
-            onClick={() => (window.location.href = "/dashboard/consultation/available-mentors")}
+        <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed rounded-lg">
+          <p className="text-muted-foreground mb-4">No consultations found</p>
+          <Button 
+            onClick={navigateToMentors}
+            variant="outline" 
+            className="flex items-center gap-2"
           >
-            Find a Mentor
+            <PlusCircle className="w-4 h-4" />
+            Start a New Consultation
           </Button>
         </div>
       ) : (
-        <ConsultationList consultations={filteredConsultations} />
+        <div className="overflow-x-auto">
+          <ConsultationList consultations={filteredConsultations} />
+        </div>
       )}
     </div>
   );

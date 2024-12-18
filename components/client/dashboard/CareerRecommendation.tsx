@@ -7,6 +7,52 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingBars } from "@/components/ui/loading-bars";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export function CareerCardSkeleton() {
+  return (
+    <Card className="w-full h-full border-2">
+      <CardHeader className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-5 w-5 rounded-full" />
+        </div>
+        <Skeleton className="h-4 w-64" />
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Status Skeleton */}
+        <div className="rounded-lg p-4 border bg-muted/5">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits Skeleton */}
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+          </div>
+        </div>
+
+        {/* Button Skeleton */}
+        <Skeleton className="h-11 w-full" />
+
+        {/* Info Text Skeleton */}
+        <div className="flex justify-center">
+          <Skeleton className="h-3 w-48" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 interface Assessment {
   hasAssessment: boolean;
@@ -45,13 +91,7 @@ export default function CareerRecommendation() {
   }, [toast]);
 
   if (loading) {
-    return (
-      <Card className="w-full h-full border-2">
-        <CardContent className="flex items-center justify-center h-full">
-          <LoadingBars text="Checking assessment status..." />
-        </CardContent>
-      </Card>
-    );
+    return <CareerCardSkeleton />;
   }
 
   const isCompleted = assessment?.hasAssessment ?? false;

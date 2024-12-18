@@ -5,6 +5,7 @@ import { MentorEventList } from "@/components/mentor/EventList";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Event } from "@/lib/types";
+import { LoadingBars } from "@/components/ui/loading-bars";
 
 export default function MentorEventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -59,8 +60,7 @@ export default function MentorEventsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading events...</p>
+              <LoadingBars />
         </div>
       </div>
     );
