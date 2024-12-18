@@ -3,20 +3,29 @@ import { NextRequest } from "next/server";
 import  prisma  from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/nextauth-options";
+import { NextResponse } from "next/server";
+import { getClientSession } from "@/lib/auth";
+import { broadcastConsultationsUpdate, broadcastMentorConsultations } from "@/lib/sseClient";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { consultationId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    // 1. Gunakan getClientSession untuk autentikasi khusus client
+    const session = await getClientSession();
+    if (!session?.clientId) {
+      return NextResponse.json(
+        { error: "Unauthorized - Client access only" },
+        { status: 401 }
+      );
     }
 
-    const consultation = await prisma.consultation.findUnique({
+    // 2. Validasi bahwa konsultasi milik client yang sedang login
+    const consultation = await prisma.consultation.findFirst({
       where: {
         id: params.consultationId,
+        clientId: session.clientId, // Pastikan hanya mengambil konsultasi milik client yang login
       },
       include: {
         mentor: {
@@ -39,10 +48,13 @@ export async function GET(
     });
 
     if (!consultation) {
-      return Response.json({ error: "Consultation not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Consultation not found or access denied" },
+        { status: 404 }
+      );
     }
 
-    // Format the data to match the expected structure
+    // 3. Format response dengan data yang aman
     const formattedConsultation = {
       id: consultation.id,
       status: consultation.status,
@@ -50,19 +62,86 @@ export async function GET(
         id: consultation.mentor.id,
         fullName: consultation.mentor.fullName,
         image: consultation.mentor.user.image,
+        jobRole: consultation.mentor.jobRole,
+        company: consultation.mentor.company,
+        education: consultation.mentor.education,
+        motivation: consultation.mentor.motivation,
         expertise: consultation.mentor.expertise,
       },
       startTime: consultation.slot?.startTime,
       endTime: consultation.slot?.endTime,
       zoomLink: consultation.zoomLink,
-      messages: consultation.messages,
+      messages: consultation.messages.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        senderId: msg.senderId,
+        createdAt: msg.createdAt
+      })),
     };
 
-    return Response.json(formattedConsultation);
+    return NextResponse.json(formattedConsultation);
   } catch (error) {
-    console.error("Error fetching consultation:", error);
-    return Response.json(
+    console.error("Error in consultation GET:", error);
+    return NextResponse.json(
       { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getClientSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const consultation = await prisma.consultation.findFirst({
+      where: {
+        id: params.id,
+        clientId: session.clientId
+      },
+      include: {
+        mentor: true
+      }
+    });
+
+    if (!consultation) {
+      return NextResponse.json(
+        { error: "Consultation not found" },
+        { status: 404 }
+      );
+    }
+
+    const { status } = await req.json();
+
+    const updatedConsultation = await prisma.consultation.update({
+      where: {
+        id: params.id
+      },
+      data: {
+        status
+      },
+      include: {
+        mentor: true,
+        client: true
+      }
+    });
+
+    // Broadcast ke kedua sisi
+    await Promise.all([
+      broadcastConsultationsUpdate(session.clientId),
+      broadcastMentorConsultations(consultation.mentor.id)
+    ]);
+
+    return NextResponse.json(updatedConsultation);
+  } catch (error) {
+    console.error("Error updating consultation:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

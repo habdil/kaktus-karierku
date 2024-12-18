@@ -33,6 +33,7 @@ export default function ConsultationList({
   const router = useRouter();
   const [zoomLink, setZoomLink] = React.useState('');
   const [selectedConsultation, setSelectedConsultation] = React.useState<string | null>(null);
+  const { data: session } = useSession();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -44,15 +45,29 @@ export default function ConsultationList({
     }
   };
 
-  const handleZoomSubmit = (consultationId: string) => {
-    if (zoomLink.trim()) {
-      onAddZoomLink(consultationId, zoomLink.trim());
-      setZoomLink('');
-      setSelectedConsultation(null);
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await onStatusChange(id, status);
+      // Reset zoom dialog if needed
+      if (selectedConsultation === id) {
+        setSelectedConsultation(null);
+      }
+    } catch (error) {
+      console.error('Error changing status:', error);
     }
   };
 
-  const { data: session } = useSession();
+  const handleZoomSubmit = async (consultationId: string) => {
+    if (zoomLink.trim()) {
+      try {
+        await onAddZoomLink(consultationId, zoomLink.trim());
+        setZoomLink('');
+        setSelectedConsultation(null);
+      } catch (error) {
+        console.error('Error adding zoom link:', error);
+      }
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

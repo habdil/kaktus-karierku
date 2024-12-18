@@ -9,13 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingBars } from "@/components/ui/loading-bars";
 import { Button } from "@/components/ui/button";
 import { Video, Clock, AlertCircle } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -26,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SlotManagementDialog from "@/components/mentor/consultations/SlotManagementDialog";
-import ZoomLinkDialog from "@/components/mentor/consultations/ZoomLinkDialog";
+import { useConsultationSSE } from "@/hooks/useConsultationSSE";
 
 export default function MentorConsultationsPage() {
   const router = useRouter();
@@ -34,10 +27,6 @@ export default function MentorConsultationsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("upcoming");
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchConsultations();
-  }, []);
 
   const fetchConsultations = async () => {
     try {
@@ -58,6 +47,17 @@ export default function MentorConsultationsPage() {
       setLoading(false);
     }
   };
+
+  useConsultationSSE({
+    endpoint: "/api/mentor/consultations",
+    userType: "MENTOR",
+    setConsultations,
+    fetchConsultations
+  });
+
+  useEffect(() => {
+    fetchConsultations();
+  }, []);
 
   const handleStatusChange = async (id: string, status: string) => {
     try {

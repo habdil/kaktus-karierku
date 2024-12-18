@@ -1,3 +1,4 @@
+// app/(client)/dashboard/consultation/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,31 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useConsultationSSE } from "@/hooks/useConsultationSSE";
 
 export default function ConsultationsPage() {
   const [consultations, setConsultations] = useState<ConsultationDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchConsultations();
-
-    // Setup SSE for real-time updates
-    const eventSource = new EventSource("/api/client/consultations/sse");
-
-    eventSource.onmessage = (event) => {
-      const updatedConsultations: ConsultationDetails[] = JSON.parse(event.data);
-      setConsultations(updatedConsultations);
-    };
-
-    eventSource.onerror = () => {
-      eventSource.close();
-      console.error("SSE connection lost, attempting to reconnect...");
-    };
-
-    return () => eventSource.close();
-  }, []);
 
   const fetchConsultations = async () => {
     try {
@@ -58,6 +41,17 @@ export default function ConsultationsPage() {
       setLoading(false);
     }
   };
+
+  useConsultationSSE({
+    endpoint: "/api/client/consultations",
+    userType: "CLIENT",
+    setConsultations,
+    fetchConsultations
+  });
+
+  useEffect(() => {
+    fetchConsultations();
+  }, []);
 
   const filteredConsultations = consultations.filter((consultation) => {
     if (filter === "all") return true;

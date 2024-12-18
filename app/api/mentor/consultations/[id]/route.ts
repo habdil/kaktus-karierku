@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getMentorSession } from "@/lib/auth";
+import { broadcastConsultationsUpdate, broadcastMentorConsultations } from "@/lib/sseClient";
 
 export async function GET(
   req: Request,
@@ -74,19 +75,18 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }  // Changed from consultationId to id
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getMentorSession();
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 401 }
+      );
     }
 
-    // Log params and request body for debugging
-    console.log("PATCH Request params:", params);
     const body = await req.json();
-    console.log("PATCH Request body:", body);
-
     const { status, zoomLink } = body;
 
     if (!params.id) {
@@ -96,19 +96,16 @@ export async function PATCH(
       );
     }
 
-    // Verify consultation exists and belongs to mentor
+    // Verify consultation and get client ID
     const consultation = await prisma.consultation.findFirst({
       where: {
         id: params.id,
         mentorId: session.mentorId
       },
-      include: {
-        client: {
-          select: {
-            id: true,
-            fullName: true
-          }
-        }
+      select: {
+        clientId: true,
+        mentorId: true,
+        status: true
       }
     });
 
@@ -121,15 +118,12 @@ export async function PATCH(
 
     // Update consultation with transaction
     const updatedConsultation = await prisma.$transaction(async (tx) => {
-      // Update consultation
+      // Update consultation status
       const updated = await tx.consultation.update({
-        where: { 
-          id: params.id 
-        },
+        where: { id: params.id },
         data: {
           ...(status && { status }),
-          ...(zoomLink !== undefined && { zoomLink }),
-          ...(status === 'ACTIVE' && { lastMessageAt: new Date() })
+          ...(zoomLink !== undefined && { zoomLink })
         }
       });
 
@@ -138,17 +132,17 @@ export async function PATCH(
         await tx.notification.create({
           data: {
             title: `Consultation ${status.toLowerCase()}`,
-            message: `Your consultation with ${session.fullName} has been ${status.toLowerCase()}`,
+            message: `Your consultation has been ${status.toLowerCase()}`,
             type: "CONSULTATION",
-            mentorId: session.mentorId,
-            clientId: consultation.client.id
+            mentorId: consultation.mentorId,
+            clientId: consultation.clientId
           }
         });
 
-        // If completed, release the slot
-        if (status === 'COMPLETED' && consultation.slotId) {
+        // If completed or cancelled, release the slot
+        if ((status === 'COMPLETED' || status === 'CANCELLED') && updated.slotId) {
           await tx.consultationSlot.update({
-            where: { id: consultation.slotId },
+            where: { id: updated.slotId },
             data: { isBooked: false }
           });
         }
@@ -157,11 +151,19 @@ export async function PATCH(
       return updated;
     });
 
+    // Broadcast updates to both mentor and client
+    await Promise.all([
+      broadcastConsultationsUpdate(consultation.clientId),
+      broadcastMentorConsultations(session.mentorId)
+    ]);
+
+    console.log(`[PATCH] Updated consultation ${params.id} status to ${status}`);
     return NextResponse.json(updatedConsultation);
+
   } catch (error) {
-    console.error("Error updating consultation:", error);
+    console.error("[PATCH Consultation] Error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

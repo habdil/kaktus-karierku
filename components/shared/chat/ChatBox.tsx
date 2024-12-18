@@ -102,8 +102,6 @@ export default function ChatBox({
                   content={message.content}
                   timestamp={message.createdAt}
                   isCurrentUser={message.senderId === currentUserId}
-                  senderName={message.senderName || "Unknown User"} // Fallback jika senderName kosong
-                  senderImage={message.senderImage}
                 />
               ))}
             <div ref={messagesEndRef} />

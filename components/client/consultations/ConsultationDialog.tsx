@@ -1,4 +1,3 @@
-// components/client/consultations/ConsultationDialog.tsx
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LoadingBars } from "@/components/ui/loading-bars";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, Video } from "lucide-react";
+import { Calendar, Clock, Video, Briefcase, Building, GraduationCap } from "lucide-react";
 import ChatBox from "@/components/shared/chat/ChatBox";
 
 interface Message {
@@ -17,6 +16,12 @@ interface Message {
   createdAt: Date;
 }
 
+interface MentorExpertise {
+  area: string;
+  level: number;
+  tags: string[];
+}
+
 interface ConsultationDetails {
   id: string;
   status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
@@ -24,6 +29,11 @@ interface ConsultationDetails {
     id: string;
     fullName: string;
     image?: string;
+    jobRole: string;
+    company: string;
+    education: string;
+    motivation?: string;
+    expertise: MentorExpertise[];
   };
   startTime?: string;
   endTime?: string;
@@ -61,7 +71,7 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
     try {
       setLoading(true);
       const [consultationRes, sessionRes] = await Promise.all([
-        fetch(`/api/client/consultations/consu/${consultationId}`),
+        fetch(`/api/client/consultations/consul/${consultationId}`),
         fetch('/api/auth/session')
       ]);
 
@@ -115,6 +125,21 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'text-green-700 bg-green-100';
+      case 'PENDING':
+        return 'text-yellow-700 bg-yellow-100';
+      case 'COMPLETED':
+        return 'text-blue-700 bg-blue-100';
+      case 'CANCELLED':
+        return 'text-red-700 bg-red-100';
+      default:
+        return 'text-gray-700 bg-gray-100';
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -124,98 +149,193 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
           </div>
         ) : consultation ? (
           <div className="space-y-6">
+            {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Avatar>
+                <Avatar className="h-16 w-16 ring-2 ring-primary/10">
                   <AvatarImage src={consultation.mentor.image} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-primary">
                     {consultation.mentor.fullName[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-xl font-semibold">
+                  <h2 className="text-2xl font-semibold">
                     Consultation with {consultation.mentor.fullName}
                   </h2>
-                  <Badge variant={
-                    consultation.status === 'ACTIVE' ? 'success' :
-                    consultation.status === 'PENDING' ? 'warning' :
-                    consultation.status === 'COMPLETED' ? 'default' :
-                    'error'
-                  }>
+                  <Badge className={`mt-2 ${getStatusColor(consultation.status)}`}>
                     {consultation.status}
                   </Badge>
                 </div>
               </div>
             </div>
 
+            {/* Mentor Details Card */}
             <Card>
               <CardContent className="space-y-6 pt-6">
+                <h3 className="text-lg font-semibold border-b pb-2">Mentor Profile</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="flex items-start gap-3">
+                    <Briefcase className="h-5 w-5 text-primary mt-1" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Current Role</p>
+                      <p className="font-medium">{consultation.mentor.jobRole}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <Building className="h-5 w-5 text-primary mt-1" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Company</p>
+                      <p className="font-medium">{consultation.mentor.company}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <GraduationCap className="h-5 w-5 text-primary mt-1" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Education</p>
+                      <p className="font-medium">{consultation.mentor.education}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {consultation.mentor.motivation && (
+                  <div className="pt-4 border-t">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Motivation</p>
+                    <p className="text-sm italic bg-muted p-4 rounded-lg">
+                      "{consultation.mentor.motivation}"
+                    </p>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t">
+                  <p className="text-sm font-medium text-muted-foreground mb-3">Areas of Expertise</p>
+                  <div className="space-y-4">
+                    {consultation.mentor.expertise.map((exp, idx) => (
+                      <div key={idx} className="bg-muted p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">{exp.area}</span>
+                          <Badge variant="outline">Level {exp.level}</Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {exp.tags.map((tag, tagIdx) => (
+                            <span
+                              key={tagIdx}
+                              className="text-xs bg-background px-2 py-1 rounded-full border"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Consultation Details Card */}
+            <Card>
+              <CardContent className="space-y-6 pt-6">
+                <h3 className="text-lg font-semibold border-b pb-2">Consultation Details</h3>
+                
                 <div className="flex flex-wrap gap-6">
                   {consultation.startTime && (
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>{new Date(consultation.startTime).toLocaleDateString()}</span>
+                      <span>{new Date(consultation.startTime).toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</span>
                     </div>
                   )}
-                  {consultation.startTime && (
+                  {consultation.startTime && consultation.endTime && (
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{new Date(consultation.startTime).toLocaleTimeString()}</span>
+                      <span>
+                        {new Date(consultation.startTime).toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })} - {new Date(consultation.endTime).toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
                     </div>
                   )}
                 </div>
 
                 {consultation.zoomLink && (
-                  <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-                    <Video className="h-4 w-4 text-primary" />
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <Video className="h-5 w-5 text-primary" />
                     <a
                       href={consultation.zoomLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline"
+                      className="text-primary hover:underline flex-1"
                     >
                       Join Zoom Meeting
                     </a>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => window.open(consultation.zoomLink, '_blank')}
+                    >
+                      Open
+                    </Button>
                   </div>
                 )}
 
                 {consultation.status === 'ACTIVE' && userId && (
-                  <ChatBox
-                    messages={consultation.messages.map((msg) => ({
-                      id: msg.id,
-                      senderId: msg.senderId,
-                      senderName: msg.senderId === userId ? "You" : consultation.mentor.fullName,
-                      senderImage: consultation.mentor.image || undefined,
-                      content: msg.content,
-                      type: "TEXT", // Default type
-                      status: "SENT", // Default status
-                      createdAt: msg.createdAt,
-                    }))}
-                    currentUserId={userId}
-                    participant={{
-                      id: consultation.mentor.id,
-                      name: consultation.mentor.fullName,
-                      image: consultation.mentor.image,
-                      status: 'online'
-                    }}
-                    onSendMessage={handleSendMessage}
-                    userRole="CLIENT" // Tambahkan ini jika diperlukan
-                  />
+                  <div className="pt-4">
+                    <ChatBox
+                      messages={consultation.messages.map((msg) => ({
+                        id: msg.id,
+                        senderId: msg.senderId,
+                        senderName: msg.senderId === userId ? "You" : consultation.mentor.fullName,
+                        senderImage: msg.senderId === userId ? undefined : consultation.mentor.image,
+                        content: msg.content,
+                        type: "TEXT",
+                        status: "SENT",
+                        createdAt: msg.createdAt,
+                      }))}
+                      currentUserId={userId}
+                      participant={{
+                        id: consultation.mentor.id,
+                        name: consultation.mentor.fullName,
+                        image: consultation.mentor.image,
+                        status: 'online'
+                      }}
+                      onSendMessage={handleSendMessage}
+                      userRole="CLIENT"
+                    />
+                  </div>
                 )}
 
                 {consultation.status === 'PENDING' && (
-                  <div className="text-center text-muted-foreground">
-                    Waiting for mentor to start the consultation...
+                  <div className="text-center p-6 bg-muted rounded-lg">
+                    <p className="text-muted-foreground">
+                      Waiting for mentor to start the consultation...
+                    </p>
                   </div>
                 )}
+                
                 {consultation.status === 'COMPLETED' && (
-                  <div className="text-center text-muted-foreground">
-                    This consultation has been completed.
+                  <div className="text-center p-6 bg-muted rounded-lg">
+                    <p className="text-muted-foreground">
+                      This consultation has been completed.
+                    </p>
                   </div>
                 )}
+                
                 {consultation.status === 'CANCELLED' && (
-                  <div className="text-center text-muted-foreground">
-                    This consultation has been cancelled.
+                  <div className="text-center p-6 bg-muted rounded-lg">
+                    <p className="text-muted-foreground">
+                      This consultation has been cancelled.
+                    </p>
                   </div>
                 )}
               </CardContent>

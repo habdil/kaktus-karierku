@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getMentorSession } from "@/lib/auth";
+import { broadcastConsultationsUpdate, broadcastMentorConsultations } from "@/lib/sseClient";
 
 export async function GET() {
   try {
@@ -117,7 +118,6 @@ export async function GET() {
   }
 }
 
-// Handle PATCH requests for updating consultation status or adding zoom links
 export async function PATCH(req: Request) {
   try {
     const session = await getMentorSession();
@@ -143,6 +143,9 @@ export async function PATCH(req: Request) {
       where: {
         id: consultationId,
         mentorId: session.mentorId
+      },
+      include: {
+        client: true
       }
     });
 
@@ -153,31 +156,55 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // Update consultation
-    const updateData: any = {};
-    if (status) updateData.status = status;
-    if (zoomLink !== undefined) updateData.zoomLink = zoomLink;
-
-    const updatedConsultation = await prisma.consultation.update({
-      where: {
-        id: consultationId
-      },
-      data: updateData,
-      include: {
-        client: true,
-        slot: true,
-        messages: {
-          orderBy: {
-            createdAt: "desc"
-          },
-          take: 1
+    // Update consultation dalam transaction
+    const updatedConsultation = await prisma.$transaction(async (tx) => {
+      // Update consultation
+      const updated = await tx.consultation.update({
+        where: {
+          id: consultationId
+        },
+        data: {
+          ...(status && { status }),
+          ...(zoomLink !== undefined && { zoomLink }),
+          ...(status === 'ACTIVE' && { lastMessageAt: new Date() })
+        },
+        include: {
+          client: true,
+          slot: true,
+          messages: {
+            orderBy: {
+              createdAt: "desc"
+            },
+            take: 1
+          }
         }
+      });
+
+      // Create notification if status changes
+      if (status && status !== consultation.status) {
+        await tx.notification.create({
+          data: {
+            title: `Consultation ${status.toLowerCase()}`,
+            message: `Your consultation status has been updated to ${status.toLowerCase()}`,
+            type: "CONSULTATION",
+            mentorId: session.mentorId,
+            clientId: consultation.client.id
+          }
+        });
       }
+
+      return updated;
     });
 
-    console.log(`[PATCH Consultation] Updated consultation ${consultationId}:`, updateData);
+    // Broadcast updates ke kedua sisi
+    await Promise.all([
+      broadcastConsultationsUpdate(consultation.client.id),
+      broadcastMentorConsultations(session.mentorId)
+    ]);
 
+    console.log(`[PATCH Consultation] Updated consultation ${consultationId}`);
     return NextResponse.json(updatedConsultation);
+
   } catch (error) {
     console.error("[PATCH Consultation] Error:", error);
     

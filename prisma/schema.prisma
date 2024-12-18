@@ -42,7 +42,7 @@ model User {
   admin         Admin?
   client        Client?
   mentor        Mentor?
-  sentMessages   Message[]    @relation("MessageSender")
+  messages Message[] @relation("MessageSender")
 }
 
 model Client {
@@ -209,7 +209,7 @@ model Message {
   status          MessageStatus  @default(SENT)
   
   // Relations
-  sender          User           @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  sender          User        @relation("MessageSender", fields: [senderId], references: [id])
   consultation    Consultation   @relation("ConsultationMessages", fields: [consultationId], references: [id], onDelete: Cascade)
   lastInConsultation Consultation? @relation("LastMessage")  // Perbaiki nama untuk konsistensi dengan Consultation
   createdAt       DateTime       @default(now())

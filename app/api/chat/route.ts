@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentSession } from "@/lib/auth";
-import { broadcastMessage } from "@/lib/realtime";
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,45 +16,90 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Consultation ID required" }, { status: 400 });
     }
 
-    // Verifikasi akses berdasarkan role
-    let consultation;
-    if (session.role === "CLIENT") {
-      consultation = await prisma.consultation.findFirst({
-        where: { id: consultationId, clientId: session.clientId },
-      });
-    } else if (session.role === "MENTOR") {
-      consultation = await prisma.consultation.findFirst({
-        where: { id: consultationId, mentorId: session.mentorId },
-      });
-    } else if (session.role === "ADMIN") {
-      consultation = await prisma.consultation.findFirst({
-        where: { id: consultationId },
-      });
-    }
-
-    if (!consultation) {
-      return NextResponse.json({ error: "Consultation not found" }, { status: 403 });
-    }
-
-    const messages = await prisma.message.findMany({
-      where: { consultationId },
-      orderBy: { createdAt: "asc" },
-      include: { sender: true },
+    console.log("Current session:", {
+      role: session.role,
+      id: session.id
     });
 
-    const transformedMessages = messages.map((message) => ({
+    // Query consultation berdasarkan role
+    const consultation = await prisma.consultation.findFirst({
+      where: {
+        id: consultationId,
+        ...(session.role !== "ADMIN" && {
+          OR: [
+            {
+              client: {
+                userId: session.id
+              }
+            },
+            {
+              mentor: {
+                userId: session.id
+              }
+            }
+          ]
+        })
+      },
+      include: {
+        messages: {
+          include: {
+            sender: true
+          },
+          orderBy: {
+            createdAt: "asc"
+          }
+        },
+        client: {
+          include: {
+            user: true
+          }
+        },
+        mentor: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    if (!consultation) {
+      console.log("Access denied. Details:", {
+        consultationId,
+        userRole: session.role,
+        userId: session.id
+      });
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    // Transform messages
+    const transformedMessages = consultation.messages.map(message => ({
       id: message.id,
       content: message.content,
-      senderId: message.senderId,
-      senderName: message.sender.name || "Unknown User", // Perbaikan di sini
-      senderImage: message.sender.image || null,
+      senderId: message.sender.id,
+      senderName: message.sender.name || "Unknown",
       type: message.type,
       status: message.status,
-      createdAt: message.createdAt,
+      createdAt: message.createdAt
     }));
-    
 
-    return NextResponse.json({ messages: transformedMessages });
+    return NextResponse.json({
+      messages: transformedMessages,
+      consultation: {
+        id: consultation.id,
+        status: consultation.status,
+        client: {
+          id: consultation.client.id,
+          name: consultation.client.fullName,
+          userId: consultation.client.userId
+        },
+        mentor: {
+          id: consultation.mentor.id,
+          name: consultation.mentor.fullName,
+          userId: consultation.mentor.userId
+        }
+      }
+    });
+
   } catch (error) {
     console.error("Error in GET /api/chat:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -73,58 +117,75 @@ export async function POST(req: Request) {
     const { consultationId, content } = body;
 
     if (!consultationId || !content.trim()) {
-      return NextResponse.json({ error: "Missing consultationId or content" }, { status: 400 });
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Verifikasi akses berdasarkan role
-    let userId = "";
-    if (session.role === "CLIENT") {
-      const consultation = await prisma.consultation.findFirst({
-        where: { id: consultationId, clientId: session.clientId },
-      });
-      if (!consultation) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-      userId = session.clientId;
-    } else if (session.role === "MENTOR") {
-      const consultation = await prisma.consultation.findFirst({
-        where: { id: consultationId, mentorId: session.mentorId },
-      });
-      if (!consultation) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-      userId = session.mentorId;
-    } else if (session.role === "ADMIN") {
-      const consultation = await prisma.consultation.findFirst({ where: { id: consultationId } });
-      if (!consultation) return NextResponse.json({ error: "Consultation not found" }, { status: 403 });
-      userId = session.id;
-    } else {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Verifikasi akses ke consultation
+    const consultation = await prisma.consultation.findFirst({
+      where: {
+        id: consultationId,
+        status: "ACTIVE",
+        ...(session.role !== "ADMIN" && {
+          OR: [
+            {
+              client: {
+                userId: session.id
+              }
+            },
+            {
+              mentor: {
+                userId: session.id
+              }
+            }
+          ]
+        })
+      },
+      include: {
+        client: true,
+        mentor: true
+      }
+    });
+
+    if (!consultation) {
+      console.log("Access denied for user:", session.id, "to consultation:", consultationId);
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // Simpan pesan di database
+    // Buat pesan
     const message = await prisma.message.create({
       data: {
         consultationId,
-        senderId: userId,
-        content,
+        senderId: session.id,
+        content: content.trim(),
         type: "TEXT",
-        status: "SENT",
+        status: "SENT"
       },
-      include: { sender: true },
+      include: {
+        sender: true
+      }
     });
 
-    // Broadcast pesan ke semua klien SSE
-    const messageToSend = {
+    // Update lastMessageAt
+    await prisma.consultation.update({
+      where: { id: consultationId },
+      data: {
+        lastMessageAt: new Date(),
+        lastMessageId: message.id
+      }
+    });
+
+    // Transform response
+    const transformedMessage = {
       id: message.id,
       content: message.content,
       senderId: message.senderId,
-      senderName: message.sender.name || "Unknown User",
-      senderImage: message.sender.image,
+      senderName: message.sender.name || "Unknown",
       type: message.type,
       status: message.status,
-      createdAt: message.createdAt,
+      createdAt: message.createdAt
     };
 
-    await broadcastMessage(messageToSend, consultationId);
-
-    return NextResponse.json(messageToSend);
+    return NextResponse.json(transformedMessage);
   } catch (error) {
     console.error("Error in POST /api/chat:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,5 +1,5 @@
 // components/client/consultations/ConsultationList.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,6 +16,18 @@ interface ConsultationListProps {
 
 export default function ConsultationList({ consultations }: ConsultationListProps) {
   const [selectedConsultationId, setSelectedConsultationId] = useState<string | null>(null);
+  const { data: session } = useSession();
+
+    // Add cleanup effect when consultations change
+    useEffect(() => {
+      if (selectedConsultationId) {
+        // Check if the selected consultation still exists
+        const exists = consultations.some(c => c.id === selectedConsultationId);
+        if (!exists) {
+          setSelectedConsultationId(null);
+        }
+      }
+    }, [consultations, selectedConsultationId]);
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -48,8 +60,6 @@ export default function ConsultationList({ consultations }: ConsultationListProp
     };
   };
 
-  const { data: session } = useSession();
-
     // Tambahkan handler untuk chat
     const handleChatMessage = async (content: string, consultationId: string) => {
       try {
@@ -72,41 +82,43 @@ export default function ConsultationList({ consultations }: ConsultationListProp
       }
     };
 
-  return (
-    <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
-        {consultations.map((consultation) => (
-          <Card 
-            key={consultation.id}
-            className="hover:shadow-lg transition-all duration-300 border border-gray-200 rounded-xl overflow-hidden"
-          >
-            <CardHeader className="flex flex-row items-center gap-4 bg-gray-50 border-b p-4">
-              <Avatar className="h-12 w-12 ring-2 ring-white">
-                <AvatarImage src={consultation.mentor.image || undefined} />
-                <AvatarFallback className="bg-primary-100 text-primary-700">
-                  {consultation.mentor.fullName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">
-                  {consultation.mentor.fullName}
-                </h3>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {consultation.mentor.expertise.map((exp: MentorExpertise) => (
-                    <Badge 
-                      key={exp.id} 
-                      variant="outline"
-                      className="text-xs bg-white"
-                    >
-                      {exp.area}
-                    </Badge>
-                  ))}
+    return (
+      <>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
+          {consultations.map((consultation) => (
+            <Card 
+              key={consultation.id}
+              className="hover:shadow-lg transition-all duration-300 border border-gray-200 rounded-xl overflow-hidden"
+            >
+              <CardHeader className="flex flex-row items-center gap-4 bg-gray-50 border-b p-4">
+                <Avatar className="h-12 w-12 ring-2 ring-white">
+                  <AvatarImage src={consultation.mentor.image || undefined} />
+                  <AvatarFallback className="bg-primary-100 text-primary-700">
+                    {consultation.mentor.fullName.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {consultation.mentor.fullName}
+                  </h3>
+                  {consultation.mentor.expertise && consultation.mentor.expertise.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {consultation.mentor.expertise.map((exp: MentorExpertise) => (
+                        <Badge 
+                          key={exp.id} 
+                          variant="outline"
+                          className="text-xs bg-white"
+                        >
+                          {exp.area}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <Badge className={`${getStatusBadgeVariant(consultation.status)} ml-auto`}>
-                {consultation.status}
-              </Badge>
-            </CardHeader>
+                <Badge className={`${getStatusBadgeVariant(consultation.status)} ml-auto`}>
+                  {consultation.status}
+                </Badge>
+              </CardHeader>
             <CardContent className="space-y-6 p-4">
               {consultation.slot && (
                 <div className="space-y-3 bg-gray-50 p-3 rounded-lg">
@@ -151,7 +163,6 @@ export default function ConsultationList({ consultations }: ConsultationListProp
                     />
                   </>
                 )}
-
                 <Button
                   variant="outline"
                   className="flex-1"

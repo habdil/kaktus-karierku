@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getClientSession } from "@/lib/auth";
-import { broadcastConsultationsUpdate } from "@/lib/sseClient";
+import { broadcastConsultationsUpdate, broadcastMentorConsultations } from "@/lib/sseClient";
 
 export async function GET() {
   try {
@@ -11,16 +11,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Fetching consultations for client:", session.clientId);
-
     const consultations = await prisma.consultation.findMany({
       where: {
-        clientId: session.clientId, // Use session.clientId instead of session.id
+        clientId: session.clientId,
       },
       include: {
         mentor: {
           include: {
-            expertise: true,
+            expertise: true, // Include mentor expertise
             user: {
               select: {
                 image: true,
@@ -28,7 +26,7 @@ export async function GET() {
             }
           },
         },
-        slot: true, // Include slot data
+        slot: true,
         messages: {
           orderBy: {
             createdAt: "desc",
@@ -41,14 +39,17 @@ export async function GET() {
       },
     });
 
-    // Transform data to include mentor image
+    // Transform data to include mentor image and expertise
     const transformedConsultations = consultations.map(consultation => ({
       ...consultation,
       mentor: {
-        ...consultation.mentor,
+        id: consultation.mentor.id,
+        fullName: consultation.mentor.fullName,
         image: consultation.mentor.user.image,
-        // Remove user object as it's now flattened
-        user: undefined
+        expertise: consultation.mentor.expertise.map(exp => ({
+          id: exp.id,
+          area: exp.area
+        }))
       }
     }));
 
@@ -72,7 +73,6 @@ export async function POST(req: Request) {
 
     const { slotId, message } = await req.json();
     
-    // Check if slot exists and is available
     const slot = await prisma.consultationSlot.findUnique({
       where: { id: slotId },
     });
@@ -84,16 +84,16 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create consultation and initial message
+    // Create consultation
     const consultation = await prisma.consultation.create({
       data: {
-        clientId: session.clientId, // Use session.clientId
+        clientId: session.clientId,
         mentorId: slot.mentorId,
         status: "PENDING",
         slotId,
         messages: {
           create: message ? {
-            senderId: session.clientId, // Use session.clientId
+            senderId: session.clientId,
             content: message,
             type: "TEXT",
           } : undefined,
@@ -104,7 +104,11 @@ export async function POST(req: Request) {
       },
     });
 
-    await broadcastConsultationsUpdate(session.clientId);
+    // Broadcast update ke client dan mentor
+    await Promise.all([
+      broadcastConsultationsUpdate(session.clientId),
+      broadcastMentorConsultations(slot.mentorId)
+    ]);
 
     // Mark slot as booked
     await prisma.consultationSlot.update({
