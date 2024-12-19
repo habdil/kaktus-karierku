@@ -46,12 +46,43 @@ cp .env.example .env
 # Configure your environment variables in .env file
 ```
 
-4. Run the development server
+4. Database Setup
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Push database schema to your database
+npx prisma db push
+
+# Run database migrations
+npx prisma migrate deploy
+
+# Create initial admin user (optional)
+node scripts/create-admin.js
+
+# View your database with Prisma Studio (optional)
+npx prisma studio
+```
+
+5. Run the development server
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Database Schema Updates
+If you make changes to the schema.prisma file:
+```bash
+# Generate migration
+npx prisma migrate dev --name your_migration_name
+
+# Apply migration
+npx prisma migrate deploy
+
+# Update Prisma Client
+npx prisma generate
+```
 
 ## 🛠️ Tech Stack
 
@@ -101,5 +132,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  Made with ❤️ by the Kaktus Team
+  Made with ❤️ by the KarierKu Team
 </div>
