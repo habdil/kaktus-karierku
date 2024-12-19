@@ -96,36 +96,39 @@ export function MentorActivities() {
         <CardTitle>Recent Mentor Activities</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
+        <div className="space-y-6 max-h-[500px] overflow-auto custom-scrollbar pr-4">
           {activities.map((activity) => (
-            <div key={activity.id} className="flex items-start space-x-4">
-              <Avatar className="h-12 w-12">
+            <div 
+              key={activity.id} 
+              className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors"
+            >
+              <Avatar className="h-12 w-12 shrink-0">
                 <AvatarFallback className="bg-primary/10">
                   {getInitials(activity.mentor.fullName)}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">
+              <div className="flex-1 space-y-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold truncate">
                     {activity.mentor.fullName}
                   </p>
                   <Badge 
                     variant="outline"
-                    className={getStatusColor(activity.status)}
+                    className={`${getStatusColor(activity.status)} shrink-0`}
                   >
                     {activity.status.toLowerCase()}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground truncate">
                   Consultation with {activity.client.fullName}
                   {activity.client.major && ` • ${activity.client.major}`}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{activity.mentor.jobRole}</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                  <span className="truncate">{activity.mentor.jobRole}</span>
                   <span>•</span>
-                  <span>{activity.mentor.company}</span>
+                  <span className="truncate">{activity.mentor.company}</span>
                   <span>•</span>
-                  <time>
+                  <time className="shrink-0">
                     {formatDistanceToNow(new Date(activity.createdAt), { 
                       addSuffix: true 
                     })}
