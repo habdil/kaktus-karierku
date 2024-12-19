@@ -27,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ClientDetailDialog from "./ClientDetailDialog";
 
 interface Client {
   id: string;
@@ -37,6 +38,8 @@ interface Client {
   currentStatus: string | null;
   dreamJob: string | null;
   mentorshipStatus: 'NEW' | 'IN_PROGRESS' | 'COMPLETED';
+  interests: string[];     // Tambahkan ini
+  hobbies: string[];      // Tambahkan ini
   lastConsultation?: {
     id: string;
     status: string;
@@ -62,8 +65,6 @@ interface ClientListProps {
 
 export default function ClientList({ clients, onStatusChange }: ClientListProps) {
   const router = useRouter();
-  const { toast } = useToast();
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
     const statusColors = {
@@ -83,40 +84,8 @@ export default function ClientList({ clients, onStatusChange }: ClientListProps)
     return icons[status as keyof typeof icons];
   };
 
-  const handleStatusChange = async (clientId: string, newStatus: string) => {
-    try {
-      setUpdatingStatus(clientId);
-      const res = await fetch("/api/mentor/clients", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, status: newStatus }),
-      });
-
-      if (!res.ok) throw new Error("Failed to update status");
-      
-      toast({
-        title: "Status Updated",
-        description: `Client status has been updated to ${newStatus.replace('_', ' ')}`,
-      });
-
-      onStatusChange?.();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update client status",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
-
   const handleViewProfile = (clientId: string) => {
     router.push(`/dashboard-mentor/clients/${clientId}`);
-  };
-
-  const handleStartConsultation = (clientId: string) => {
-    router.push(`/dashboard-mentor/consultation/${clientId}`);
   };
 
   return (
@@ -208,12 +177,14 @@ export default function ClientList({ clients, onStatusChange }: ClientListProps)
             )}
 
             <div className="flex gap-2 pt-2">
-              <Button 
-                className="flex-1 text-white" 
-                onClick={() => handleViewProfile(client.id)}
-              >
-                View Details
-              </Button>
+            <ClientDetailDialog 
+              client={client} 
+              trigger={
+                <Button className="flex-1 text-white">
+                  View Details
+                </Button>
+              }
+            />
             </div>
           </CardContent>
         </Card>

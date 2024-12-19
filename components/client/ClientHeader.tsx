@@ -18,6 +18,9 @@ import { formatDistanceToNow } from "date-fns";
 import classNames from "classnames";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { CareerPlanDialog } from "./navbar/CareerPlanDialog";
+import { ConsultationHistoryDialog } from "./navbar/ConsultationHistoryDialog";
+import { ProfileSettingDialog } from "./navbar/ProfileSettingDialog";
 
 interface Notification {
   id: string;
@@ -31,9 +34,10 @@ interface Notification {
 
 interface ClientHeaderProps {
   clientName?: string;
+  userImage?: string | null;
 }
 
-export function ClientHeader({ clientName = "Client" }: ClientHeaderProps) {
+export function ClientHeader({ clientName = "Client", userImage }: ClientHeaderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -237,21 +241,21 @@ export function ClientHeader({ clientName = "Client" }: ClientHeaderProps) {
 
           {/* User Menu */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-                      clientName
-                    )}&backgroundColor=3b82f6`}
-                    alt={clientName}
-                  />
-                  <AvatarFallback>
-                    {clientName.split(" ").map((n) => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={userImage || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+                        clientName
+                      )}&backgroundColor=3b82f6`}
+                      alt={clientName}
+                    />
+                    <AvatarFallback>
+                      {clientName.split(" ").map((n) => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent
               className="w-[200px] sm:w-[240px] rounded-md shadow-lg"
               align="end"
@@ -268,9 +272,39 @@ export function ClientHeader({ clientName = "Client" }: ClientHeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-              <DropdownMenuItem>My Career Plan</DropdownMenuItem>
-              <DropdownMenuItem>Consultations History</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+              <ProfileSettingDialog 
+                  trigger={
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start px-2 font-normal"
+                    >
+                      Profile Settings
+                    </Button>
+                  }
+                />
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                  <CareerPlanDialog 
+                    trigger={
+                      <Button variant="ghost" className="w-full justify-start px-2 font-normal">
+                        My Career Plan
+                      </Button>
+                    }
+                  />
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+              <ConsultationHistoryDialog 
+                  trigger={
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start px-2 font-normal"
+                    >
+                      Consultations History
+                    </Button>
+                  }
+                />
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
               className="text-destructive focus:bg-destructive/10 cursor-pointer"

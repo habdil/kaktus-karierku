@@ -12,10 +12,7 @@ import {
   Briefcase,
   GraduationCap,
   MapPin,
-  CheckCircle,
   ArrowLeft,
-  MessageCircle,
-  Video,
 } from 'lucide-react';
 import { MentorResponse } from '@/lib/types/api';
 
@@ -84,22 +81,13 @@ const DetailMentor = ({
               {mentor.status === 'ACTIVE' && (
                 <Button 
                   variant="default"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-white"
                   onClick={onBookSlot}
                 >
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-white" />
                   Book Consultation
                 </Button>
               )}
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={onChatClick}
-                disabled={!mentor.status || mentor.status !== 'ACTIVE'}
-              >
-                <MessageCircle className="h-4 w-4" />
-                Chat
-              </Button>
             </div>
 
             {/* Profile Info */}
@@ -115,18 +103,6 @@ const DetailMentor = ({
               <div className="flex items-center gap-2 text-muted-foreground">
                 <GraduationCap className="h-4 w-4" />
                 <span>{mentor.education}</span>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t">
-              <h3 className="font-medium mb-2">Expertise</h3>
-              <div className="flex flex-wrap gap-2">
-                {mentor.expertise.map((exp) => (
-                  <Badge key={exp.area} variant="outline">
-                    {exp.area} 
-                    {exp.level && <span className="ml-1">• Lv.{exp.level}</span>}
-                  </Badge>
-                ))}
               </div>
             </div>
           </CardContent>
@@ -150,27 +126,6 @@ const DetailMentor = ({
                         <p className="text-muted-foreground">{mentor.motivation}</p>
                       </div>
                     )}
-
-                    <div>
-                      <h3 className="font-medium mb-2">Areas of Focus</h3>
-                      <ul className="space-y-2">
-                        {mentor.expertise.map((exp) => (
-                          <li key={exp.area} className="flex items-start gap-2">
-                            <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-                            <div>
-                              <p className="font-medium">{exp.area}</p>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {exp.tags.map((tag) => (
-                                  <Badge key={tag} variant="default" className="text-xs">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -209,6 +164,7 @@ const DetailMentor = ({
                           <Button 
                             onClick={onBookSlot}
                             variant="default"
+                            className='text-white'
                           >
                             Book This Slot
                           </Button>

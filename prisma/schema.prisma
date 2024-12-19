@@ -63,6 +63,7 @@ model Client {
   eventRegistrations EventRegistration[]
   receivedRecommendations MentorRecommendation[]
   notifications Notification[]
+  careerPlans        String[]
 }
 
 model Mentor {

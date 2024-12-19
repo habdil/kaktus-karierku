@@ -142,25 +142,26 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <LoadingBars />
           </div>
         ) : consultation ? (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 ring-2 ring-primary/10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/10">
                   <AvatarImage src={consultation.mentor.image} />
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {consultation.mentor.fullName[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-2xl font-semibold">
-                    Consultation with {consultation.mentor.fullName}
+                  <h2 className="text-xl sm:text-2xl font-semibold">
+                    Consultation with{' '}
+                    <span className="block sm:inline">{consultation.mentor.fullName}</span>
                   </h2>
                   <Badge className={`mt-2 ${getStatusColor(consultation.status)}`}>
                     {consultation.status}
@@ -171,58 +172,60 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
 
             {/* Mentor Details Card */}
             <Card>
-              <CardContent className="space-y-6 pt-6">
-                <h3 className="text-lg font-semibold border-b pb-2">Mentor Profile</h3>
+              <CardContent className="space-y-4 sm:space-y-6 pt-4 sm:pt-6">
+                <h3 className="text-base sm:text-lg font-semibold border-b pb-2">
+                  Mentor Profile
+                </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="flex items-start gap-3">
-                    <Briefcase className="h-5 w-5 text-primary mt-1" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-primary mt-1" />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Current Role</p>
-                      <p className="font-medium">{consultation.mentor.jobRole}</p>
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Current Role</p>
+                      <p className="text-sm sm:text-base font-medium">{consultation.mentor.jobRole}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3">
-                    <Building className="h-5 w-5 text-primary mt-1" />
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Building className="h-4 w-4 sm:h-5 sm:w-5 text-primary mt-1" />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Company</p>
-                      <p className="font-medium">{consultation.mentor.company}</p>
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Company</p>
+                      <p className="text-sm sm:text-base font-medium">{consultation.mentor.company}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3">
-                    <GraduationCap className="h-5 w-5 text-primary mt-1" />
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-primary mt-1" />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Education</p>
-                      <p className="font-medium">{consultation.mentor.education}</p>
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Education</p>
+                      <p className="text-sm sm:text-base font-medium">{consultation.mentor.education}</p>
                     </div>
                   </div>
                 </div>
 
                 {consultation.mentor.motivation && (
-                  <div className="pt-4 border-t">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Motivation</p>
-                    <p className="text-sm italic bg-muted p-4 rounded-lg">
+                  <div className="pt-3 sm:pt-4 border-t">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">Motivation</p>
+                    <p className="text-xs sm:text-sm italic bg-muted p-3 sm:p-4 rounded-lg">
                       "{consultation.mentor.motivation}"
                     </p>
                   </div>
                 )}
 
-                <div className="pt-4 border-t">
-                  <p className="text-sm font-medium text-muted-foreground mb-3">Areas of Expertise</p>
-                  <div className="space-y-4">
+                <div className="pt-3 sm:pt-4 border-t">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">Areas of Expertise</p>
+                  <div className="space-y-3 sm:space-y-4">
                     {consultation.mentor.expertise.map((exp, idx) => (
-                      <div key={idx} className="bg-muted p-4 rounded-lg">
+                      <div key={idx} className="bg-muted p-3 sm:p-4 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">{exp.area}</span>
-                          <Badge variant="outline">Level {exp.level}</Badge>
+                          <span className="text-sm sm:text-base font-medium">{exp.area}</span>
+                          <Badge variant="outline" className="text-xs">Level {exp.level}</Badge>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                           {exp.tags.map((tag, tagIdx) => (
                             <span
                               key={tagIdx}
-                              className="text-xs bg-background px-2 py-1 rounded-full border"
+                              className="text-xs bg-background px-2 py-0.5 rounded-full border"
                             >
                               {tag}
                             </span>
@@ -237,14 +240,16 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
 
             {/* Consultation Details Card */}
             <Card>
-              <CardContent className="space-y-6 pt-6">
-                <h3 className="text-lg font-semibold border-b pb-2">Consultation Details</h3>
+              <CardContent className="space-y-4 sm:space-y-6 pt-4 sm:pt-6">
+                <h3 className="text-base sm:text-lg font-semibold border-b pb-2">
+                  Consultation Details
+                </h3>
                 
-                <div className="flex flex-wrap gap-6">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                   {consultation.startTime && (
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>{new Date(consultation.startTime).toLocaleDateString('id-ID', {
+                      <span className="text-sm sm:text-base">{new Date(consultation.startTime).toLocaleDateString('id-ID', {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
@@ -255,7 +260,7 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
                   {consultation.startTime && consultation.endTime && (
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>
+                      <span className="text-sm sm:text-base">
                         {new Date(consultation.startTime).toLocaleTimeString('id-ID', {
                           hour: '2-digit',
                           minute: '2-digit'
@@ -342,8 +347,8 @@ export function ConsultationDialog({ consultationId, isOpen, onClose }: Consulta
             </Card>
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Consultation not found</p>
+          <div className="text-center py-6 sm:py-8">
+            <p className="text-sm sm:text-base text-muted-foreground">Consultation not found</p>
           </div>
         )}
       </DialogContent>

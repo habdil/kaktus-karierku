@@ -198,19 +198,22 @@ const availableDatesFilter = (date: Date): boolean => {
         onChatClick={handleChatClick}
       />
 
-      <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Book Consultation with {mentor.fullName}</DialogTitle>
-            <DialogDescription>
-              Choose your preferred date and time for the consultation
-            </DialogDescription>
-          </DialogHeader>
+    <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader>
+          <DialogTitle className="text-lg sm:text-xl">
+            Book Consultation with {mentor.fullName}
+          </DialogTitle>
+          <DialogDescription>
+            Choose your preferred date and time for the consultation
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            {/* Calendar */}
-            <div className="space-y-4">
-              <h3 className="font-medium">Select Date</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          {/* Calendar */}
+          <div className="space-y-4">
+            <h3 className="font-medium">Select Date</h3>
+            <div className="flex justify-center">
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -220,50 +223,44 @@ const availableDatesFilter = (date: Date): boolean => {
                 className="rounded-md border"
               />
             </div>
-
-            {/* Time Slots */}
-            <div className="space-y-4">
-              <h3 className="font-medium">Available Time Slots</h3>
-              {selectedDate ? (
-                <div className="space-y-2">
-                  {getAvailableSlotsForDate(selectedDate).map((slot) => (
-                    <Button
-                      key={slot.id}
-                      variant={selectedSlot?.id === slot.id ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => setSelectedSlot(slot)}
-                    >
-                      {format(new Date(slot.startTime), 'HH:mm')} - 
-                      {format(new Date(slot.endTime), 'HH:mm')}
-                    </Button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">Please select a date first</p>
-              )}
-
-              {selectedSlot && (
-                <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-medium">Additional Message (Optional)</h3>
-                  <Textarea
-                    placeholder="Add a message for your mentor..."
-                    value={bookingMessage}
-                    onChange={(e) => setBookingMessage(e.target.value)}
-                    rows={4}
-                  />
-                  <Button 
-                    className="w-full"
-                    onClick={confirmBooking}
-                    disabled={isBooking}
-                  >
-                    {isBooking ? "Booking..." : "Confirm Booking"}
-                  </Button>
-                </div>
-              )}
-            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          {/* Time Slots */}
+          <div className="space-y-4">
+            <h3 className="font-medium">Available Time Slots</h3>
+            {selectedDate ? (
+              <div className="space-y-2">
+                {getAvailableSlotsForDate(selectedDate).map((slot) => (
+                  <Button
+                    key={slot.id}
+                    variant={selectedSlot?.id === slot.id ? "default" : "outline"}
+                    className="w-full justify-start "
+                    onClick={() => setSelectedSlot(slot)}
+                  >
+                    {format(new Date(slot.startTime), 'HH:mm')} - 
+                    {format(new Date(slot.endTime), 'HH:mm')}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">Please select a date first</p>
+            )}
+
+            {selectedSlot && (
+              <div className="space-y-4 pt-4 border-t">
+                <Button 
+                  className="w-full"
+                  onClick={confirmBooking}
+                  disabled={isBooking}
+                >
+                  {isBooking ? "Booking..." : "Confirm Booking"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// app/(client)/dashboard/career/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +34,6 @@ export default function CareerPersonalizationPage() {
             router.push("/dashboard/career/results");
             return;
           }
-          // Only show warning if user hasn't completed an assessment
           setShowWarning(true);
         }
       } catch (error) {
@@ -70,19 +68,22 @@ export default function CareerPersonalizationPage() {
   return (
     <>
       <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
-        <AlertDialogContent className="max-w-[500px]">
-          <AlertDialogHeader>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-[500px] p-4 sm:p-6 overflow-y-auto max-h-[90vh] sm:max-h-[85vh]">
+          <AlertDialogHeader className="space-y-3">
             <div className="flex items-center gap-2 text-red-500">
-              <AlertCircle className="h-5 w-5" />
-              <AlertDialogTitle>Important Notice</AlertDialogTitle>
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <AlertDialogTitle className="text-base sm:text-lg">
+                Important Notice
+              </AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="space-y-3">
-              <p>
+            <AlertDialogDescription className="space-y-4 text-sm sm:text-base">
+              <p className="text-foreground/80">
                 Please read carefully before proceeding with the career assessment form:
               </p>
-              <ul className="list-disc pl-6 space-y-2">
+              <ul className="list-disc pl-4 sm:pl-6 space-y-2 text-foreground/80">
                 <li>
-                  This assessment can only be taken <span className="font-semibold">once per account</span>
+                  This assessment can only be taken{" "}
+                  <span className="font-medium text-foreground">once per account</span>
                 </li>
                 <li>
                   Take your time to provide thoughtful and honest answers for the most accurate recommendations
@@ -91,13 +92,16 @@ export default function CareerPersonalizationPage() {
                   The AI analysis will be based solely on your responses, so accuracy is crucial
                 </li>
               </ul>
-              <p className="mt-4 font-medium text-primary">
+              <p className="pt-2 font-medium text-primary">
                 Are you ready to proceed with the assessment?
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction className="text-white" onClick={handleWarningClose}>
+          <AlertDialogFooter className="mt-4 sm:mt-6">
+            <AlertDialogAction 
+              onClick={handleWarningClose}
+              className="w-full sm:w-auto text-white bg-primary hover:bg-primary/90"
+            >
               Yes, I understand and want to proceed
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -105,13 +109,13 @@ export default function CareerPersonalizationPage() {
       </AlertDialog>
 
       {!showWarning && (
-        <div className="container mx-auto py-8">
-          <div className="max-w-3xl mx-auto space-y-8">
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold text-primary-900">
+        <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-6">
+          <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
+            <div className="text-center space-y-3 sm:space-y-4">
+              <h1 className="text-2xl sm:text-3xl font-bold text-primary-900">
                 Career Personalization
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-sm sm:text-lg text-muted-foreground">
                 Fill out the following form to get career recommendations tailored to your profile
               </p>
             </div>
