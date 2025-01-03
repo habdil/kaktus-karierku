@@ -29,12 +29,11 @@ export default async function ClientDashboardLayout({
   if (!session || session.role !== "CLIENT") {
     redirect("/login");
   }
-
   // Get user data including image
   const userData = await getClientData(session.id);
 
   return (
-    <div className="relative min-h-screen flex bg-background">
+    <div className="relative min-h-screen flex">
       {/* Sidebar - Hidden on mobile, visible on desktop */}
       <div className="hidden md:block fixed inset-y-0 left-0 z-30">
         <ClientSidebar />
@@ -47,17 +46,15 @@ export default async function ClientDashboardLayout({
       
       {/* Main Content with Header */}
       <div className="flex-1 flex flex-col min-h-screen md:pl-64">
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <ClientHeader 
             clientName={session.fullName} 
             userImage={userData?.image}
           />
         </div>
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background">
-          <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-            {children}
-          </div>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          {children}
         </main>
       </div>
       <Toaster />

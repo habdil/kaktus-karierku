@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, Building2, GraduationCap, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UpcomingEvents } from "@/components/public/UpcomingEvents";
 import HeroSection from "@/components/public/HeroSection";
@@ -115,6 +115,7 @@ export default function Home() {
                     height={48}
                     className="rounded-full"
                   />
+                  
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary-900">Linda R.</h4>
