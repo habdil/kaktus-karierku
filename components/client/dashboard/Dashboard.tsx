@@ -20,7 +20,7 @@ interface Event {
 }
 
 interface DashboardProps {
-  clientName: string; // Make it required
+  clientName: string;
 }
 
 export default function ClientDashboard({ clientName }: DashboardProps) {
@@ -58,27 +58,35 @@ export default function ClientDashboard({ clientName }: DashboardProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background">
         <LoadingBars text="Mengunduh data..." />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="col-span-1 md:col-span-2 lg:col-span-3">
-          <GreetingCard clientName={clientName} />
-        </div>
-        
-        <div className="col-span-1">
-          <CareerRecommendation />
-        </div>
-        
-        <div className="col-span-1 md:col-span-1 lg:col-span-2">
-          <EventList events={events} />
+    <main className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
+        <div className="grid grid-cols-1 gap-6 lg:gap-8">
+          {/* Greeting Section - Full Width */}
+          <section className="col-span-1">
+            <GreetingCard clientName={clientName} />
+          </section>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Career Recommendation Section */}
+            <aside className="lg:col-span-1 order-2 lg:order-1">
+              <CareerRecommendation />
+            </aside>
+
+            {/* Events Section */}
+            <section className="lg:col-span-2 order-1 lg:order-2">
+              <EventList events={events} />
+            </section>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
